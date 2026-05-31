@@ -494,3 +494,18 @@ pub struct Subscriber {
 
 // escrow can be done after this main part
 
+
+/// helpers implementation
+
+/// Verify is that is api_user is authorized & correct key is calling this api_user
+impl ApiUser {
+  pub fn verify_authority(&self, authority: &Pubkey) -> Result<()> {
+    match self.authority {
+      None => err!(ErrorCode::NotAuthorized),
+      Some(key) => {
+        require!(key == *authority, ErrorCode::AuthorityMismatch);
+        Ok(())
+      }
+    }
+  }
+}

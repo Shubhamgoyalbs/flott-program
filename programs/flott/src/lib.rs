@@ -15,7 +15,5 @@ declare_id!("9vG8CUJ5Szcr7HVgMzsdzvUAauCbmyiCYTuyUAyeDnpq");
 pub mod flott {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
-    }
+    
 }
