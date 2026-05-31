@@ -47,11 +47,6 @@ impl<'info> DeactivateApiUser<'info> {
     );
     
     require!(
-      !self.api_user.authority.is_none(),
-      ErrorCode::NotAuthorized
-    );
-    
-    require!(
       !self.api_user.is_active,
       ErrorCode::AlreadyActive
     );
