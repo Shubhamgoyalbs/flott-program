@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::error::ErrorCode;
+
 /// Captures payment details once an order has been successfully paid.
 /// Stored inside `Refund.order_payment` as `Option<OrderPayment>`.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, InitSpace)]
@@ -48,7 +50,10 @@ pub struct VestingSplit {
 pub struct ApiUser {
   /// The authority keypair that controls this account.
   /// Generated and managed by an MPC provider (e.g. Para / Turnkey).
-  pub authority: Pubkey,
+  pub authority: Option<Pubkey>,
+  
+  /// The owner of this api key and the owner of the funds generated
+  pub owner: Pubkey,
   
   /// PDA bump seed for this `ApiUser` account.
   pub bump: u8,
@@ -62,6 +67,7 @@ pub struct ApiUser {
   
   /// Whether this `ApiUser` account is currently active.
   /// Inactive accounts cannot create or process orders.
+  /// Default to inactive, activated only after server authorized key signs the key.
   pub is_active: bool,
   
   /// Fee charged on each transaction, in 6-decimal precision.
@@ -188,8 +194,8 @@ pub struct Expiry {
   ///           valid till 0if extend policy not exists
   pub extended_count: Option<u8>,
   
+  /// hard ceiling — cannot extend beyond this timestamp
   pub max_expires_at: i64,
-  // hard ceiling — cannot extend beyond this timestamp
   
   /// Reserved bytes for future fields or migrations without breaking account layout.
   pub _reserved: [u8; 16],
@@ -487,3 +493,4 @@ pub struct Subscriber {
 }
 
 // escrow can be done after this main part
+
