@@ -14,6 +14,15 @@ pub enum ErrorCode {
     #[msg("Vault balance too low — must exceed API_USER_MIN_BALANCE + API_USER_MPC_MIN_BALANCE")]
     InsufficientVaultBalance,
     
+    #[msg("Deposit would not bring vault above API_USER_MIN_BALANCE")]
+    InsufficientDeposit,
+    
+    #[msg("Arithmetic overflow")]
+    Overflow,
+    
+    #[msg("Arithmetic underflow")]
+    Underflow,
+    
     #[msg("No authority is set on this ApiUser — account was never authorized")]
     NotAuthorized,
     
