@@ -5,7 +5,7 @@ use crate::constants::*;
 use crate::error::ErrorCode;
 
 #[derive(Accounts)]
-pub struct DeactivateApiUser<'info> {
+pub struct ActivateApiUser<'info> {
   pub authority: Signer<'info>,
   
   pub owner: SystemAccount<'info>,
@@ -37,7 +37,7 @@ pub struct DeactivateApiUser<'info> {
   pub system_program: Program<'info, System>
 }
 
-impl<'info> DeactivateApiUser<'info> {
+impl<'info> ActivateApiUser<'info> {
   pub fn handler(&mut self) -> Result<()> {
     self.api_user.verify_authority(&self.authority.key())?;
     
