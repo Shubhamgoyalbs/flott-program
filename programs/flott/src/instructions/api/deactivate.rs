@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
-
 use crate::state::*;
 use crate::error::ErrorCode;
+use crate::event::ApiUserAccountActiveState;
 
+#[event_cpi]
 #[derive(Accounts)]
 pub struct DeactivateApiUser<'info> {
   pub authority: Signer<'info>,
@@ -24,7 +25,7 @@ pub struct DeactivateApiUser<'info> {
 }
 
 impl<'info> DeactivateApiUser<'info> {
-  pub fn handler(&mut self) -> Result<()> {
+  pub fn handler(&mut self, ctx: Context<DeactivateApiUser>) -> Result<()> {
     self.api_user.verify_authority(&self.authority.key())?;
     
     require!(
@@ -33,6 +34,11 @@ impl<'info> DeactivateApiUser<'info> {
     );
     
     self.api_user.is_active = false;
+    
+    emit_cpi!(ApiUserAccountActiveState {
+      account: self.api_user.key(),
+      is_active: false
+    });
     
     Ok(())
   }

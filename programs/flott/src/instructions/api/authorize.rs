@@ -3,13 +3,15 @@ use anchor_lang::{
   system_program::{
     transfer,
     Transfer
-  }
+  },
 };
 
 use crate::state::*;
 use crate::constants::*;
 use crate::error::ErrorCode;
+use crate::event::*;
 
+#[event_cpi]
 #[derive(Accounts)]
 pub struct AuthorizeApiUser<'info> {
   #[account(mut)]
@@ -48,7 +50,7 @@ pub struct AuthorizeApiUser<'info> {
 }
 
 impl<'info> AuthorizeApiUser<'info> {
-  pub fn handler(&mut self) -> Result<()> {
+  pub fn handler(&mut self, ctx: Context<AuthorizeApiUser>) -> Result<()> {
     require!(
       self.api_user.owner == self.owner.key(),
       ErrorCode::OwnerMismatch
@@ -69,8 +71,8 @@ impl<'info> AuthorizeApiUser<'info> {
       ErrorCode::InsufficientVaultBalance
     );
     
-    let owner_key     = self.owner.key();
-    let vault_bump    = [self.api_user.vault_bump];
+    let owner_key = self.owner.key();
+    let vault_bump = [self.api_user.vault_bump];
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
@@ -95,6 +97,11 @@ impl<'info> AuthorizeApiUser<'info> {
     
     self.api_user.authority = Some(self.authority.key());
     self.api_user.is_active = true;
+    
+    emit_cpi!(ApiUserAccountGotAuthorized {
+      account: self.api_user.key(),
+      authority: self.authority.key()
+    });
     
     Ok(())
   }
