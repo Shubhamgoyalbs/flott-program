@@ -19,8 +19,7 @@ pub struct InitializeApiUser<'info> {
       "api".as_ref(),
       "user".as_ref(),
       "vault".as_ref(),
-      owner.key().as_ref(),
-      SERVER_AUTHORIZED_KEY.as_ref()
+      api_user.key().as_ref(),
     ],
     bump
   )]
