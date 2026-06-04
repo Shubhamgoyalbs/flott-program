@@ -131,6 +131,7 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
       max_cycles : params.max_cycles,
       max_retries : params.max_retries,
       created_at : clock.unix_timestamp,
+      is_active : true,
       _reserved : [0u8; 16]
     };
     
