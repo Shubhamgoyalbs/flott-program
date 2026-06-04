@@ -494,6 +494,23 @@ pub struct Subscriber {
 
 // escrow can be done after this main part
 
+/// helper structs
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct InitializeSubscriptionPolicyParams {
+  pub recipient: Pubkey,
+  
+  pub mint: Pubkey,
+  
+  pub amount: u64,
+  
+  pub billing_interval: BillingInterval,
+  
+  pub trial_intervals: u8,
+  
+  pub max_cycles: Option<u32>,
+  
+  pub max_retries: u8,
+}
 
 /// helpers implementation
 

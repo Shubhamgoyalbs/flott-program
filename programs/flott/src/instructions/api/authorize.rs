@@ -67,7 +67,7 @@ impl<'info> AuthorizeApiUser<'info> {
     );
     
     require!(
-      self.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_MIN_BALANCE,
+      self.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
       ErrorCode::InsufficientVaultBalance
     );
     
@@ -92,7 +92,7 @@ impl<'info> AuthorizeApiUser<'info> {
         },
         &[vault_seeds],
       ),
-      API_USER_MPC_MIN_BALANCE,
+      API_USER_MPC_INITIAL_BALANCE,
     )?;
     
     self.api_user.authority = Some(self.authority.key());

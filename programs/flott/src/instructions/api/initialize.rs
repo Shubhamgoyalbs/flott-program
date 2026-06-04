@@ -52,7 +52,7 @@ impl <'info> InitializeApiUser<'info> {
           to: self.vault.to_account_info()
         }
       ),
-      API_USER_MIN_BALANCE + API_USER_MPC_MIN_BALANCE + 5000000 // this extra amount lives vault and can be deductible
+      API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE + 5000000 // this extra amount lives vault and can be deductible
     )?;
     
     self.api_user.authority = None;

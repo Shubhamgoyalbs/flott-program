@@ -12,3 +12,13 @@ pub struct ApiUserAccountActiveState {
   pub account: Pubkey,
   pub is_active: bool
 }
+
+#[event]
+pub struct SubscriptionPolicyInitialized {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct TransfersFundsToAuthority {
+  pub account: Pubkey
+}

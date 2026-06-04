@@ -31,4 +31,14 @@ pub enum ErrorCode {
     
     #[msg("This ApiUser is already inactive")]
     AlreadyNotActive,
+    
+    #[msg("API user account is inactive")]
+    ApiUserInactive,
+    
+    #[msg("Maximum retries value is invalid")]
+    InvalidMaxRetries,
+    
+    #[msg("Amount must be greater than zero")]
+    InvalidAmount,
+    
 }
