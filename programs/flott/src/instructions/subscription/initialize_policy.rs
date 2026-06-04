@@ -70,7 +70,6 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     params: InitializeSubscriptionPolicyParams,
     ctx: Context<InitializeSubscriptionPolicy>
   ) -> Result<()> {
-    
     self.api_user.verify_authority(&self.authority.key())?;
     
     require!(params.amount > 0, ErrorCode::InvalidAmount);
@@ -91,8 +90,7 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
       b"api",
       b"user",
       b"vault",
-      owner_key.as_ref(),
-      SERVER_AUTHORIZED_KEY.as_ref(),
+      api_user_key.as_ref(),
       &[self.api_user.vault_bump],
     ];
     

@@ -70,15 +70,14 @@ impl<'info> AuthorizeApiUser<'info> {
       ErrorCode::InsufficientVaultBalance
     );
     
-    let owner_key = self.owner.key();
+    let api_user_key = self.api_user.key();
     let vault_bump = [self.api_user.vault_bump];
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
       b"user",
       b"vault",
-      owner_key.as_ref(),
-      SERVER_AUTHORIZED_KEY.as_ref(),
+      api_user_key.as_ref(),
       &vault_bump,
     ];
     
