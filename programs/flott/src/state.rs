@@ -418,6 +418,9 @@ pub struct SubscriptionPolicy {
   /// Unix timestamp of when this policy was created.
   pub created_at: i64,
   
+  /// Active state is this policy accepting new users
+  pub is_active: bool,
+  
   /// Reserved bytes for future fields or migrations without breaking account layout.
   pub _reserved: [u8; 16],
 }
