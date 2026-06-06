@@ -22,3 +22,8 @@ pub struct SubscriptionPolicyInitialized {
 pub struct TransfersFundsToAuthority {
   pub account: Pubkey
 }
+
+#[event]
+pub struct SubscriptionPolicyUpdated {
+  pub account: Pubkey
+}
