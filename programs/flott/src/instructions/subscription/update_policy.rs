@@ -31,8 +31,6 @@ pub struct UpdateSubscriptionPolicy<'info> {
   )]
   pub vault: SystemAccount<'info>,
   
-  /// CHECK: This account is manually created via CPI using CreateAccount.
-  /// We use UncheckedAccount because Anchor doesn't support direct init with PDA payer.
   #[account(
     mut,
     seeds = [
