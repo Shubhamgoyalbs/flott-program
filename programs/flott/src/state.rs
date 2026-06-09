@@ -482,7 +482,7 @@ pub struct Subscriber {
   /// Unix timestamp of the most recent charge attempt, successful or not.
   /// Used alongside `SubscriptionPolicy.max_retry_period` to determine
   /// whether the retry window has elapsed.
-  pub last_retry_at: i64,
+  pub last_retry_at: Option<i64>,
   
   /// Running count of successfully completed (paid) billing cycles.
   /// Compared against `SubscriptionPolicy.max_cycles` to detect completion.
