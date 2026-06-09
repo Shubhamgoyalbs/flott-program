@@ -1,8 +1,6 @@
 use anchor_lang::{
   prelude::*,
   system_program::{
-    CreateAccount,
-    create_account,
     Transfer,
     transfer
   }
@@ -65,8 +63,6 @@ pub struct UpdateSubscriptionPolicy<'info> {
 impl<'info> UpdateSubscriptionPolicy<'info> {
   pub fn handler(
     &mut self,
-    bumps: &UpdateSubscriptionPolicyBumps,
-    cuid: String,
     is_active: bool,
     amount: u64,
     trial_intervals: u8,
