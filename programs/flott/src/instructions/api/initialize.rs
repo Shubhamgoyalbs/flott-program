@@ -42,26 +42,26 @@ pub struct InitializeApiUser<'info> {
 }
 
 impl <'info> InitializeApiUser<'info> {
-  pub fn handler(&mut self, bumps: InitializeApiUserBumps, fee_percentage: u32) -> Result<()> {
+  pub fn handler(ctx: Context<InitializeApiUser>, fee_percentage: u32) -> Result<()> {
     transfer(
       CpiContext::new(
-        self.system_program.key(),
+        ctx.accounts.system_program.key(),
         Transfer {
-          from: self.owner.to_account_info(),
-          to: self.vault.to_account_info()
+          from: ctx.accounts.owner.to_account_info(),
+          to: ctx.accounts.vault.to_account_info()
         }
       ),
       API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE + 5000000 // this extra amount lives vault and can be deductible
     )?;
     
-    self.api_user.authority = None;
-    self.api_user.vault = self.vault.key();
-    self.api_user.owner = self.owner.key();
-    self.api_user.bump = bumps.api_user;
-    self.api_user.vault_bump = bumps.vault;
-    self.api_user.fee_percentage = fee_percentage;
-    self.api_user.is_active = false;
-    self.api_user.created_at = Clock::get()?.unix_timestamp;
+    ctx.accounts.api_user.authority = None;
+    ctx.accounts.api_user.vault = ctx.accounts.vault.key();
+    ctx.accounts.api_user.owner = ctx.accounts.owner.key();
+    ctx.accounts.api_user.bump = ctx.bumps.api_user;
+    ctx.accounts.api_user.vault_bump = ctx.bumps.vault;
+    ctx.accounts.api_user.fee_percentage = fee_percentage;
+    ctx.accounts.api_user.is_active = false;
+    ctx.accounts.api_user.created_at = Clock::get()?.unix_timestamp;
     Ok(())
   }
 }

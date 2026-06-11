@@ -38,23 +38,23 @@ pub struct ActivateApiUser<'info> {
 }
 
 impl<'info> ActivateApiUser<'info> {
-  pub fn handler(&mut self, ctx: Context<ActivateApiUser>) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+  pub fn handler(ctx: Context<ActivateApiUser>) -> Result<()> {
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
-      self.vault.lamports() > API_USER_MIN_BALANCE,
+      ctx.accounts.vault.lamports() > API_USER_MIN_BALANCE,
       ErrorCode::InsufficientVaultBalance
     );
     
     require!(
-      !self.api_user.is_active,
+      !ctx.accounts.api_user.is_active,
       ErrorCode::AlreadyActive
     );
     
-    self.api_user.is_active = false;
+    ctx.accounts.api_user.is_active = false;
     
     emit_cpi!(ApiUserAccountActiveState {
-      account: self.api_user.key(),
+      account: ctx.accounts.api_user.key(),
       is_active: true
     });
     

@@ -40,10 +40,10 @@ pub struct DepositToVault<'info> {
 }
 
 impl<'info> DepositToVault<'info> {
-  pub fn handler(&mut self, amount: u64) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+  pub fn handler(ctx: Context<DepositToVault>, amount: u64) -> Result<()> {
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
-    let balance_after = self.vault.lamports()
+    let balance_after = ctx.accounts.vault.lamports()
       .checked_add(amount)
       .ok_or(ErrorCode::Overflow)?;
     
@@ -54,10 +54,10 @@ impl<'info> DepositToVault<'info> {
     
     transfer(
       CpiContext::new(
-        self.system_program.key(),
+        ctx.accounts.system_program.key(),
         Transfer {
-          from: self.owner.to_account_info(),
-          to:   self.vault.to_account_info(),
+          from: ctx.accounts.owner.to_account_info(),
+          to:   ctx.accounts.vault.to_account_info(),
         },
       ),
       amount,

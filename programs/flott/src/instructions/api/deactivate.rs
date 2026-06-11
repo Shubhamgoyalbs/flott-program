@@ -25,18 +25,18 @@ pub struct DeactivateApiUser<'info> {
 }
 
 impl<'info> DeactivateApiUser<'info> {
-  pub fn handler(&mut self, ctx: Context<DeactivateApiUser>) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+  pub fn handler(ctx: Context<DeactivateApiUser>) -> Result<()> {
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
-      self.api_user.is_active,
+      ctx.accounts.api_user.is_active,
       ErrorCode::AlreadyNotActive
     );
     
-    self.api_user.is_active = false;
+    ctx.accounts.api_user.is_active = false;
     
     emit_cpi!(ApiUserAccountActiveState {
-      account: self.api_user.key(),
+      account: ctx.accounts.api_user.key(),
       is_active: false
     });
     

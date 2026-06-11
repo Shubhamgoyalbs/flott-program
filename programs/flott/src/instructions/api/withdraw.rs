@@ -40,10 +40,10 @@ pub struct WithdrawFromVault<'info> {
 }
 
 impl<'info> WithdrawFromVault<'info> {
-  pub fn handler(&mut self, amount: u64) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+  pub fn handler(ctx: Context<WithdrawFromVault>, amount: u64) -> Result<()> {
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
-    let balance_after = self.vault.lamports()
+    let balance_after = ctx.accounts.vault.lamports()
       .checked_sub(amount)
       .ok_or(ErrorCode::Underflow)?;
     
@@ -52,8 +52,8 @@ impl<'info> WithdrawFromVault<'info> {
       ErrorCode::InsufficientDeposit
     );
     
-    let api_user_key = self.api_user.key();
-    let vault_bump    = [self.api_user.vault_bump];
+    let api_user_key = ctx.accounts.api_user.key();
+    let vault_bump    = [ctx.accounts.api_user.vault_bump];
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
@@ -65,10 +65,10 @@ impl<'info> WithdrawFromVault<'info> {
     
     transfer(
       CpiContext::new_with_signer(
-        self.system_program.key(),
+        ctx.accounts.system_program.key(),
         Transfer {
-          from:   self.vault.to_account_info(),
-          to: self.owner.to_account_info(),
+          from:   ctx.accounts.vault.to_account_info(),
+          to: ctx.accounts.owner.to_account_info(),
         },
         &[vault_seeds],
       ),

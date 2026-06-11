@@ -49,29 +49,29 @@ pub struct AuthorizeApiUser<'info> {
 }
 
 impl<'info> AuthorizeApiUser<'info> {
-  pub fn handler(&mut self, ctx: Context<AuthorizeApiUser>) -> Result<()> {
+  pub fn handler(ctx: Context<AuthorizeApiUser>) -> Result<()> {
     require!(
-      self.api_user.owner == self.owner.key(),
+      ctx.accounts.api_user.owner == ctx.accounts.owner.key(),
       ErrorCode::OwnerMismatch
     );
     
     require!(
-      self.api_user.authority.is_none(),
+      ctx.accounts.api_user.authority.is_none(),
       ErrorCode::AlreadyAuthorized
     );
     
     require!(
-      !self.api_user.is_active,
+      !ctx.accounts.api_user.is_active,
       ErrorCode::AlreadyActive
     );
     
     require!(
-      self.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
+      ctx.accounts.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
       ErrorCode::InsufficientVaultBalance
     );
     
-    let api_user_key = self.api_user.key();
-    let vault_bump = [self.api_user.vault_bump];
+    let api_user_key = ctx.accounts.api_user.key();
+    let vault_bump = [ctx.accounts.api_user.vault_bump];
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
@@ -83,22 +83,22 @@ impl<'info> AuthorizeApiUser<'info> {
     
     transfer(
       CpiContext::new_with_signer(
-        self.system_program.key(),
+        ctx.accounts.system_program.key(),
         Transfer {
-          from: self.vault.to_account_info(),
-          to:   self.authority.to_account_info(),
+          from: ctx.accounts.vault.to_account_info(),
+          to:   ctx.accounts.authority.to_account_info(),
         },
         &[vault_seeds],
       ),
       API_USER_MPC_INITIAL_BALANCE,
     )?;
     
-    self.api_user.authority = Some(self.authority.key());
-    self.api_user.is_active = true;
+    ctx.accounts.api_user.authority = Some(ctx.accounts.authority.key());
+    ctx.accounts.api_user.is_active = true;
     
     emit_cpi!(ApiUserAccountGotAuthorized {
-      account: self.api_user.key(),
-      authority: self.authority.key()
+      account: ctx.accounts.api_user.key(),
+      authority: ctx.accounts.authority.key()
     });
     
     Ok(())
