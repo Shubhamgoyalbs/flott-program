@@ -25,7 +25,7 @@ pub mod flott {
     ActivateApiUser::handler(ctx)
   }
   
-  pub fn deactivate_api_user(ctx: Context<DeactivateApiUser>, fee_percentage: u32) -> Result<()> {
+  pub fn deactivate_api_user(ctx: Context<DeactivateApiUser>) -> Result<()> {
     DeactivateApiUser::handler(ctx)
   }
   
