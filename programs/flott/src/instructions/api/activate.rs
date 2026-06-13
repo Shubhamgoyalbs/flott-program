@@ -51,7 +51,7 @@ impl<'info> ActivateApiUser<'info> {
       ErrorCode::AlreadyActive
     );
     
-    ctx.accounts.api_user.is_active = false;
+    ctx.accounts.api_user.is_active = true;
     
     emit_cpi!(ApiUserAccountActiveState {
       account: ctx.accounts.api_user.key(),
