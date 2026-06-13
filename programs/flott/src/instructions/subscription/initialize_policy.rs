@@ -12,7 +12,6 @@ use crate::constants::*;
 use crate::error::ErrorCode;
 use crate::event::*;
 
-
 #[event_cpi]
 #[derive(Accounts)]
 #[instruction(cuid: String)]
@@ -64,13 +63,11 @@ pub struct InitializeSubscriptionPolicy<'info> {
 
 impl<'info> InitializeSubscriptionPolicy<'info> {
   pub fn handler(
-    &mut self,
-    bumps: &InitializeSubscriptionPolicyBumps,
     cuid: String,
     params: InitializeSubscriptionPolicyParams,
     ctx: Context<InitializeSubscriptionPolicy>
   ) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(params.amount > 0, ErrorCode::InvalidAmount);
     
@@ -82,16 +79,14 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     
     let lamports = rent.minimum_balance(space);
     
-    let owner_key = self.owner.key();
-    
-    let api_user_key = self.api_user.key();
+    let api_user_key = ctx.accounts.api_user.key();
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
       b"user",
       b"vault",
       api_user_key.as_ref(),
-      &[self.api_user.vault_bump],
+      &[ctx.accounts.api_user.vault_bump],
     ];
     
     let policy_seeds: &[&[u8]] = &[
@@ -103,10 +98,10 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     
     create_account(
       CpiContext::new_with_signer(
-        self.system_program.key(),
+        ctx.accounts.system_program.key(),
         CreateAccount {
-          from: self.vault.to_account_info(),
-          to: self.subscription_policy.to_account_info()
+          from: ctx.accounts.vault.to_account_info(),
+          to: ctx.accounts.subscription_policy.to_account_info()
         },
         &[vault_seeds, policy_seeds]
       ),
@@ -118,8 +113,8 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     let clock = Clock::get()?;
     
     let policy_data = SubscriptionPolicy {
-      bump : bumps.subscription_policy,
-      authority : self.authority.key(),
+      bump : ctx.bumps.subscription_policy,
+      authority : ctx.accounts.authority.key(),
       recipient : params.recipient,
       mint : params.mint,
       amount : params.amount,
@@ -137,13 +132,13 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     
     policy_data.try_serialize(&mut writer)?;
     
-    if self.authority.to_account_info().lamports() < API_USER_MPC_MIN_BALANCE {
+    if ctx.accounts.authority.to_account_info().lamports() < API_USER_MPC_MIN_BALANCE {
       transfer(
         CpiContext::new_with_signer(
-          self.system_program.key(),
+          ctx.accounts.system_program.key(),
           Transfer {
-            from: self.vault.to_account_info(),
-            to:   self.authority.to_account_info(),
+            from: ctx.accounts.vault.to_account_info(),
+            to:   ctx.accounts.authority.to_account_info(),
           },
           &[vault_seeds],
         ),
@@ -151,21 +146,21 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
       )?;
       
       emit_cpi!(TransfersFundsToAuthority {
-        account: self.authority.key()
+        account: ctx.accounts.authority.key()
       })
       
     }
     
-    if self.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
-      self.api_user.is_active = false;
+    if ctx.accounts.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
+      ctx.accounts.api_user.is_active = false;
       emit_cpi!(ApiUserAccountActiveState {
-        account: self.api_user.key(),
+        account: ctx.accounts.api_user.key(),
         is_active: false
       })
     }
     
     emit_cpi!(SubscriptionPolicyInitialized {
-      account: self.subscription_policy.key()
+      account: ctx.accounts.subscription_policy.key()
     });
     
     Ok(())

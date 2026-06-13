@@ -60,37 +60,36 @@ pub struct UpdateSubscriptionPolicy<'info> {
 
 impl<'info> UpdateSubscriptionPolicy<'info> {
   pub fn handler(
-    &mut self,
     is_active: bool,
     amount: u64,
     trial_intervals: u8,
     ctx: Context<UpdateSubscriptionPolicy>
   ) -> Result<()> {
-    self.api_user.verify_authority(&self.authority.key())?;
+    ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(amount > 0, ErrorCode::InvalidAmount);
     
-    let api_user_key = self.api_user.key();
+    let api_user_key = ctx.accounts.api_user.key();
     
     let vault_seeds: &[&[u8]] = &[
       b"api",
       b"user",
       b"vault",
       api_user_key.as_ref(),
-      &[self.api_user.vault_bump],
+      &[ctx.accounts.api_user.vault_bump],
     ];
     
-    self.subscription_policy.amount = amount;
-    self.subscription_policy.is_active = is_active;
-    self.subscription_policy.trial_intervals = trial_intervals;
+    ctx.accounts.subscription_policy.amount = amount;
+    ctx.accounts.subscription_policy.is_active = is_active;
+    ctx.accounts.subscription_policy.trial_intervals = trial_intervals;
     
-    if self.authority.to_account_info().lamports() < API_USER_MPC_MIN_BALANCE {
+    if ctx.accounts.authority.to_account_info().lamports() < API_USER_MPC_MIN_BALANCE {
       transfer(
         CpiContext::new_with_signer(
-          self.system_program.key(),
+          ctx.accounts.system_program.key(),
           Transfer {
-            from: self.vault.to_account_info(),
-            to:   self.authority.to_account_info(),
+            from: ctx.accounts.vault.to_account_info(),
+            to:   ctx.accounts.authority.to_account_info(),
           },
           &[vault_seeds],
         ),
@@ -98,21 +97,21 @@ impl<'info> UpdateSubscriptionPolicy<'info> {
       )?;
       
       emit_cpi!(TransfersFundsToAuthority {
-        account: self.authority.key()
+        account: ctx.accounts.authority.key()
       })
     }
     
-    if self.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
-      self.api_user.is_active = false;
+    if ctx.accounts.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
+      ctx.accounts.api_user.is_active = false;
       
       emit_cpi!(ApiUserAccountActiveState {
-        account: self.api_user.key(),
+        account: ctx.accounts.api_user.key(),
         is_active: false
       })
     }
     
     emit_cpi!(SubscriptionPolicyUpdated {
-      account: self.subscription_policy.key()
+      account: ctx.accounts.subscription_policy.key()
     });
     Ok(())
   }
