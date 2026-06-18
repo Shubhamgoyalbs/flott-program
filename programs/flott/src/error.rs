@@ -41,4 +41,33 @@ pub enum ErrorCode {
     #[msg("Amount must be greater than zero")]
     InvalidAmount,
     
+    #[msg("Amount must be greater than ne cycle price")]
+    InsufficientAmount,
+    
+    #[msg("Subscriber has already been initialized for this policy")]
+    SubscriberAlreadyInitialized,
+    
+    #[msg("Recipient account does not match the one recorded on the subscription policy")]
+    InvalidRecipient,
+    
+    #[msg("Max cycle count is invalid — must be greater than zero")]
+    InvalidMaxCycle,
+    
+    #[msg("Subscription policy is inactive and cannot accept new subscribers")]
+    PolicyInactive,
+    
+    #[msg("Subscriber has not been initialized — next_charge_at is not set")]
+    SubscriberNotInitialized,
+    
+    #[msg("Arithmetic overflow during calculation")]
+    ArithmeticOverflow,
+    
+    #[msg("Vault balance is insufficient after deposit to meet the minimum required threshold")]
+    InsufficientVaultBalanceAfterDeposit,
+    
+    #[msg("Scheduler request is invalid — charge time has not yet been reached")]
+    InvalidSchedulerRequest,
+    
+    #[msg("Subscriber account does not match the one recorded on the subscriber PDA")]
+    SubscriberMismatch,
 }

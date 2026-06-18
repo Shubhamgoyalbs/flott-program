@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
+use crate::state::CancellationReason;
 
-/// This event update the authorized field in api in db and sets the active field true
 #[event]
 pub struct ApiUserAccountGotAuthorized {
   pub account: Pubkey,
@@ -27,3 +27,41 @@ pub struct TransfersFundsToAuthority {
 pub struct SubscriptionPolicyUpdated {
   pub account: Pubkey
 }
+
+#[event]
+pub struct ApiAccountClosed {
+  pub account: Pubkey
+}
+
+#[event]
+pub struct SubscriptionCancelled {
+  pub account: Pubkey,
+  pub reason: CancellationReason,
+}
+
+#[event]
+pub struct TrialPeriodUsed {
+  pub account: Pubkey,
+  pub left_cycles: u8
+}
+
+#[event]
+pub struct AddRetryScheduler {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct RemoveSubscriberRetryScheduler {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct PaymentSuccessfulSubscription {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct SubscriberActivated {
+  pub account: Pubkey
+}
+

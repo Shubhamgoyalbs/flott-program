@@ -491,6 +491,9 @@ pub struct Subscriber {
   /// PDA bump seed for this `Subscriber` account.
   pub bump: u8,
   
+  /// The timestamp at which this account is created, if there is difference of 30 min for activating the subscription then the policyholder can cancel the subscription by calling it 
+  pub created_at: i64,
+  
   /// Reserved bytes for future fields or migrations without breaking account layout.
   pub _reserved: [u8; 16],
 }
@@ -515,6 +518,14 @@ pub struct InitializeSubscriptionPolicyParams {
   pub max_retries: u8,
 }
 
+/// Enum for status of cancellation
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, Debug)]
+pub enum CancellationReason {
+  BySubscriber,
+  MaxCyclesReached,
+  PaymentFailed,
+}
+
 /// helpers implementation
 
 /// Verify is that is api_user is authorized & correct key is calling this api_user
@@ -526,6 +537,18 @@ impl ApiUser {
         require!(key == *authority, ErrorCode::AuthorityMismatch);
         Ok(())
       }
+    }
+  }
+}
+
+impl SubscriptionPolicy {
+  pub fn get_interval_timestamp(&self) -> i64 {
+    match self.billing_interval {
+      BillingInterval::Custom { seconds } => seconds,
+      BillingInterval::Daily   => 24 * 60 * 60,
+      BillingInterval::Weekly  => 7 * 24 * 60 * 60,
+      BillingInterval::Monthly => 30 * 24 * 60 * 60,
+      BillingInterval::Yearly  => 365 * 24 * 60 * 60,
     }
   }
 }

@@ -73,6 +73,14 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     
     require!(params.max_retries <= 10, ErrorCode::InvalidMaxRetries);
     
+    match params.max_cycles {
+      None => {}
+      Some(val) => {
+        require!(val > 1, ErrorCode::InvalidMaxCycle);
+        require!(val > params.trial_intervals as u32, ErrorCode::InvalidMaxCycle);
+      }
+    }
+    
     let rent = Rent::get()?;
     
     let space = 8 + SubscriptionPolicy::INIT_SPACE;

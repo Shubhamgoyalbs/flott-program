@@ -17,6 +17,8 @@ declare_id!("9vG8CUJ5Szcr7HVgMzsdzvUAauCbmyiCYTuyUAyeDnpq");
 pub mod flott {
   use super::*;
 
+  /// Api Instructions
+  
   pub fn initialize_api_user(ctx: Context<InitializeApiUser>, fee_percentage: u32) -> Result<()> {
    InitializeApiUser::handler(ctx, fee_percentage)
   }
@@ -39,5 +41,9 @@ pub mod flott {
   
   pub fn withdraw_from_vault(ctx: Context<WithdrawFromVault>, amount: u64) -> Result<()> {
     WithdrawFromVault::handler(ctx, amount)
+  }
+  
+  pub fn close_api_account(ctx: Context<CloseApiAccount>) -> Result<()> {
+    CloseApiAccount::handler(ctx)
   }
 }
