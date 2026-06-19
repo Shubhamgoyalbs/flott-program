@@ -70,6 +70,11 @@ impl<'info> AuthorizeApiUser<'info> {
       ErrorCode::InsufficientVaultBalance
     );
     
+    require!(
+      ctx.accounts.server.key() > SERVER_AUTHORIZED_KEY,
+      ErrorCode::InvalidAuthorizeRequest
+    );
+    
     let api_user_key = ctx.accounts.api_user.key();
     let vault_bump = [ctx.accounts.api_user.vault_bump];
     

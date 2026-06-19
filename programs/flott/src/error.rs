@@ -8,6 +8,9 @@ pub enum ErrorCode {
     #[msg("This ApiUser has already been authorized (authority is set)")]
     AlreadyAuthorized,
     
+    #[msg("Invalid authorize request, the server key doesn't match the actual server key")]
+    InvalidAuthorizeRequest,
+    
     #[msg("This ApiUser is already active")]
     AlreadyActive,
     
