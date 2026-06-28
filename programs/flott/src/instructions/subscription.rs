@@ -1,15 +1,25 @@
 pub mod initialize_policy;
 pub mod update_policy;
 pub mod initialize_subscriber;
+pub mod initialize_subscriber_token;
 pub mod activate;
+pub mod activate_token;
 pub mod cancel;
+pub mod cancel_token;
 pub mod deposit;
+pub mod deposit_token;
 pub mod pay;
+pub mod pay_token;
 
 pub use  initialize_policy::*;
 pub use update_policy::*;
 pub use initialize_subscriber::*;
+pub use initialize_subscriber_token::*;
 pub use activate::*;
+pub use activate_token::*;
 pub use cancel::*;
+pub use cancel_token::*;
 pub use deposit::*;
+pub use deposit_token::*;
 pub use pay::*;
+pub use pay_token::*;

@@ -14,7 +14,10 @@ use crate::event::*;
 #[event_cpi]
 #[derive(Accounts)]
 pub struct AuthorizeApiUser<'info> {
-  #[account(mut)]
+  #[account(
+    mut,
+    constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
+  )]
   pub server: Signer<'info>,
   
   #[account(mut)]
@@ -68,11 +71,6 @@ impl<'info> AuthorizeApiUser<'info> {
     require!(
       ctx.accounts.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
       ErrorCode::InsufficientVaultBalance
-    );
-    
-    require!(
-      ctx.accounts.server.key() > SERVER_AUTHORIZED_KEY,
-      ErrorCode::InvalidAuthorizeRequest
     );
     
     let api_user_key = ctx.accounts.api_user.key();

@@ -23,6 +23,7 @@ custom-panic = []
 [dependencies]
 anchor-lang = { version = "1.0.1", features = ["event-cpi"]}
 solana-instruction = "3.4.0"
+anchor-spl = "1.0.2"
 
 [dev-dependencies]
 b58 = "0.1.2"

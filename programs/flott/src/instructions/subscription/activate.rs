@@ -8,10 +8,14 @@ use anchor_lang::{
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
+use crate::NATIVE_SOL_MINT;
 
 #[derive(Accounts)]
 #[event_cpi]
-#[instruction(cuid: String)]
+#[instruction(
+  cuid: String,
+  policy_cuid: String
+)]
 pub struct ActivateSubscription<'info> {
   pub authority: SystemAccount<'info>,
   
@@ -38,7 +42,7 @@ pub struct ActivateSubscription<'info> {
       "subscription".as_ref(),
       "policy".as_ref(),
       api_user.key().as_ref(),
-      cuid.as_bytes(),
+      policy_cuid.as_bytes(),
     ],
     bump = subscription_policy.bump,
     has_one = recipient @ ErrorCode::InvalidRecipient
@@ -82,6 +86,11 @@ impl <'info > ActivateSubscription<'info> {
     
     require!(amount >= ctx.accounts.subscription_policy.amount, ErrorCode::InsufficientAmount);
     require!(ctx.accounts.subscriber_pda.initiated_at == None, ErrorCode::SubscriberAlreadyInitialized);
+    
+    require!(
+      ctx.accounts.subscription_policy.mint == NATIVE_SOL_MINT,
+      ErrorCode::InvalidTokenMint
+    );
     
     transfer(
       CpiContext::new(

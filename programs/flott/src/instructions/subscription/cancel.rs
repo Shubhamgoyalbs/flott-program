@@ -8,16 +8,32 @@ use anchor_lang::{
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::SubscriptionCancelled;
+use crate::NATIVE_SOL_MINT;
 
 #[derive(Accounts)]
 #[event_cpi]
-#[instruction(cuid: String)]
+#[instruction(
+  cuid: String,
+  policy_cuid: String,
+)]
 pub struct CancelSubscription<'info> {
   pub authority: SystemAccount<'info>,
   
   pub owner: SystemAccount<'info>,
   
   pub subscriber: Signer<'info>,
+  
+  #[account(
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump
+  )]
+  pub vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -36,7 +52,7 @@ pub struct CancelSubscription<'info> {
       "subscription".as_ref(),
       "policy".as_ref(),
       api_user.key().as_ref(),
-      cuid.as_bytes(),
+      policy_cuid.as_bytes(),
     ],
     bump = subscription_policy.bump,
   )]
@@ -44,7 +60,7 @@ pub struct CancelSubscription<'info> {
   
   #[account(
       mut,
-      close = subscriber,
+      close = vault,
       seeds = [
         "subscriber".as_ref(),
         api_user.key().as_ref(),
@@ -75,6 +91,11 @@ impl <'info > CancelSubscription<'info> {
   pub fn handler(
     ctx: Context<CancelSubscription>
   ) -> Result<()> {
+    require!(
+      ctx.accounts.subscription_policy.mint == NATIVE_SOL_MINT,
+      ErrorCode::InvalidTokenMint
+    );
+    
     let vault_balance = ctx.accounts.subscriber_vault.lamports();
     
     let sub_pda_key = ctx.accounts.subscriber_pda.key();

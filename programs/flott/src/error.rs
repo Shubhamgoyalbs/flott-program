@@ -73,4 +73,10 @@ pub enum ErrorCode {
     
     #[msg("Subscriber account does not match the one recorded on the subscriber PDA")]
     SubscriberMismatch,
+    
+    #[msg("Token transfers are not yet implemented - only native SOL is supported")]
+    InvalidTokenMint,
+    
+    #[msg("")]
+    MustFulfillRequirements,
 }

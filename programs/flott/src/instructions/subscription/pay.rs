@@ -4,15 +4,18 @@ use anchor_lang::{
     transfer,
     Transfer,
   },
-  
 };
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
+use crate::constants::*;
 
 #[derive(Accounts)]
 #[event_cpi]
-#[instruction(cuid: String)]
+#[instruction(
+  cuid: String,
+  policy_cuid: String
+)]
 pub struct PayForSubscription<'info> {
   pub authority: SystemAccount<'info>,
   
@@ -39,7 +42,7 @@ pub struct PayForSubscription<'info> {
       "subscription".as_ref(),
       "policy".as_ref(),
       api_user.key().as_ref(),
-      cuid.as_bytes(),
+      policy_cuid.as_bytes(),
     ],
     bump = subscription_policy.bump,
     has_one = recipient @ ErrorCode::InvalidRecipient
@@ -71,6 +74,23 @@ pub struct PayForSubscription<'info> {
   )]
   pub api_user: Account<'info, ApiUser>,
   
+  #[account(
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump
+  )]
+  pub vault: SystemAccount<'info>,
+  
+  #[account(
+    constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
+  )]
+  pub server: SystemAccount<'info>,
+  
   pub system_program: Program<'info, System>,
 }
 
@@ -82,6 +102,11 @@ impl <'info > PayForSubscription<'info> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     let clock_timestamp = Clock::get()?.unix_timestamp;
+    
+    require!(
+      ctx.accounts.subscription_policy.mint == NATIVE_SOL_MINT,
+      ErrorCode::InvalidTokenMint
+    );
     
     match ctx.accounts.subscriber_pda.next_charge_at {
       None => {
@@ -150,7 +175,7 @@ impl <'info > PayForSubscription<'info> {
       if vault_balance < ctx.accounts.subscription_policy.amount {
         match ctx.accounts.subscriber_pda.last_retry_at {
           None => {
-            ctx.accounts.subscriber_pda.payment_retry_count = ctx.accounts.subscription_policy.max_retries - 1;
+            ctx.accounts.subscriber_pda.payment_retry_count = ctx.accounts.subscription_policy.max_retries;
           }
           Some(_timestamp) => {
             ctx.accounts.subscriber_pda.payment_retry_count -= 1;
@@ -163,6 +188,10 @@ impl <'info > PayForSubscription<'info> {
         
         ctx.accounts.subscriber_pda.last_retry_at = Some(clock_timestamp);
       }else {
+        let amount = ctx.accounts.subscription_policy.amount;
+        let api_user_fee = (amount as u128 * ctx.accounts.api_user.fee_percentage as u128 / 100_000_000) as u64;
+        let program_fee = (amount as u128 * PROGRAM_FEE as u128 / 100_000_000) as u64;
+        
         let vault_signer_seeds = &[
           b"subscriber".as_ref(),
           b"vault".as_ref(),
@@ -171,17 +200,47 @@ impl <'info > PayForSubscription<'info> {
           &[ctx.accounts.subscriber_pda.vault_bump],
         ];
         
-        transfer(
-          CpiContext::new_with_signer(
-            ctx.accounts.system_program.key(),
-            Transfer {
-              from: ctx.accounts.subscriber_vault.to_account_info(),
-              to: ctx.accounts.recipient.to_account_info()
-            },
-            &[vault_signer_seeds]
-          ),
-          ctx.accounts.subscription_policy.amount
-        )?;
+        if api_user_fee > 0 {
+          transfer(
+            CpiContext::new_with_signer(
+              ctx.accounts.system_program.key(),
+              Transfer {
+                from: ctx.accounts.subscriber_vault.to_account_info(),
+                to: ctx.accounts.vault.to_account_info()
+              },
+              &[vault_signer_seeds]
+            ),
+            api_user_fee
+          )?;
+        }
+        
+        if program_fee > 0 {
+          transfer(
+            CpiContext::new_with_signer(
+              ctx.accounts.system_program.key(),
+              Transfer {
+                from: ctx.accounts.subscriber_vault.to_account_info(),
+                to: ctx.accounts.server.to_account_info()
+              },
+              &[vault_signer_seeds]
+            ),
+            program_fee
+          )?;
+        }
+        
+        if amount > 0 {
+          transfer(
+            CpiContext::new_with_signer(
+              ctx.accounts.system_program.key(),
+              Transfer {
+                from: ctx.accounts.subscriber_vault.to_account_info(),
+                to: ctx.accounts.recipient.to_account_info()
+              },
+              &[vault_signer_seeds]
+            ),
+            amount
+          )?;
+        }
         
         emit_cpi!(PaymentSuccessfulSubscription{
           account: sub_pda_key
@@ -198,9 +257,7 @@ impl <'info > PayForSubscription<'info> {
   pub fn close_account(&self, cuid: &str) -> Result<()> {
     
     let subscriber_pda = &self.subscriber_pda;
-    let subscriber = &self.subscriber;
     
-    // Refund remaining balance in vault + PDA rent to subscriber
     let vault_balance = self.subscriber_vault.lamports();
     let pda_balance = subscriber_pda.get_lamports();
     
@@ -240,7 +297,7 @@ impl <'info > PayForSubscription<'info> {
         self.system_program.key(),
         Transfer {
           from: self.subscriber_pda.to_account_info(),
-          to: self.subscriber.to_account_info(),
+          to: self.vault.to_account_info(),
         },
         &[pda_signer_seeds],
       ),
@@ -253,4 +310,3 @@ impl <'info > PayForSubscription<'info> {
     Ok(())
   }
 }
-

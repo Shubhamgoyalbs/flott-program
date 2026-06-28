@@ -1,9 +1,6 @@
-use anchor_lang::{
-  prelude::*,
-  system_program::{
-    transfer,
-    Transfer
-  }
+use anchor_lang::prelude::*;
+use anchor_spl::token_interface::{
+  transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
 use crate::state::*;
 use crate::error::ErrorCode;
@@ -13,9 +10,9 @@ use crate::NATIVE_SOL_MINT;
 #[event_cpi]
 #[instruction(
   cuid: String,
-  policy_cuid: String,
+  policy_cuid: String
 )]
-pub struct DepositToSubscriptionVault<'info> {
+pub struct DepositToSubscriptionVaultToken<'info> {
   pub authority: SystemAccount<'info>,
   
   pub owner: SystemAccount<'info>,
@@ -24,15 +21,29 @@ pub struct DepositToSubscriptionVault<'info> {
   
   #[account(
     mut,
+    token::mint = mint,
+    token::authority = subscriber,
+  )]
+  pub subscriber_token_account: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
+    mut,
     seeds = [
-      "subscriber".as_ref(),
-      "vault".as_ref(),
-      subscriber_pda.key().as_ref(),
-      api_user.key().as_ref(),
+        "subscriber".as_ref(),
+        "vault".as_ref(),
+        subscriber_pda.key().as_ref(),
+        api_user.key().as_ref(),
     ],
     bump = subscriber_pda.vault_bump,
+    token::mint = mint,
+    token::authority = subscriber_vault,
   )]
-  pub subscriber_vault: SystemAccount<'info>,
+  pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
+      constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
+  )]
+  pub mint: InterfaceAccount<'info, Mint>,
   
   #[account(
     seeds = [
@@ -54,7 +65,7 @@ pub struct DepositToSubscriptionVault<'info> {
       cuid.as_bytes(),
     ],
     bump = subscriber_pda.bump,
-    has_one = subscriber @ ErrorCode::SubscriberMismatch
+    has_one = subscriber @ ErrorCode::SubscriberMismatch,
   )]
   pub subscriber_pda: Account<'info, Subscriber>,
   
@@ -63,52 +74,58 @@ pub struct DepositToSubscriptionVault<'info> {
     seeds = [
       "api".as_ref(),
       "user".as_ref(),
-      owner.key().as_ref()
+      owner.key().as_ref(),
     ],
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
   pub api_user: Account<'info, ApiUser>,
   
+  pub token_program: Interface<'info, TokenInterface>,
   pub system_program: Program<'info, System>,
 }
 
-impl <'info > DepositToSubscriptionVault<'info> {
+impl<'info> DepositToSubscriptionVaultToken<'info> {
   pub fn handler(
-    ctx: Context<DepositToSubscriptionVault>,
-    amount: u64
+    ctx: Context<DepositToSubscriptionVaultToken>,
+    amount: u64,
   ) -> Result<()> {
     require!(amount > 0, ErrorCode::InvalidAmount);
+    
     require!(
       ctx.accounts.subscriber_pda.initiated_at.is_some(),
       ErrorCode::SubscriberNotInitialized
     );
+    
     require!(
-      ctx.accounts.subscription_policy.mint == NATIVE_SOL_MINT,
+      ctx.accounts.subscription_policy.mint != NATIVE_SOL_MINT,
       ErrorCode::InvalidTokenMint
     );
     
-    let current_balance = ctx.accounts.subscriber_vault.lamports();
-    
+    let current_balance = ctx.accounts.subscriber_vault.amount;
     let projected_balance = current_balance
-    .checked_add(amount)
-    .ok_or(ErrorCode::ArithmeticOverflow)?;
+      .checked_add(amount)
+      .ok_or(ErrorCode::ArithmeticOverflow)?;
     
     require!(
       projected_balance >= ctx.accounts.subscription_policy.amount,
       ErrorCode::InsufficientVaultBalanceAfterDeposit
     );
     
-    transfer(
+    transfer_checked(
       CpiContext::new(
-        ctx.accounts.system_program.key(),
-        Transfer {
-          from: ctx.accounts.subscriber.to_account_info(),
+        ctx.accounts.token_program.key(),
+        TransferChecked {
+          from: ctx.accounts.subscriber_token_account.to_account_info(),
+          mint: ctx.accounts.mint.to_account_info(),
           to: ctx.accounts.subscriber_vault.to_account_info(),
+          authority: ctx.accounts.subscriber.to_account_info(),
         },
       ),
       amount,
+      ctx.accounts.mint.decimals,
     )?;
+    
     Ok(())
   }
 }
