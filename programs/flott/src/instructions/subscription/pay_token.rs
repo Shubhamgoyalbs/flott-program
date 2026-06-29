@@ -27,23 +27,23 @@ pub struct PayForSubscriptionToken<'info> {
   pub subscriber: SystemAccount<'info>,
   
   #[account(
-        constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
-        constraint = mint.key() != NATIVE_SOL_MINT @ ErrorCode::InvalidTokenMint,
+    constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
+    constraint = mint.key() != NATIVE_SOL_MINT @ ErrorCode::InvalidTokenMint,
   )]
   pub mint: Account<'info, Mint>,
   
   #[account(
-        mut,
-        seeds = [
-            "subscriber".as_ref(),
-            "vault".as_ref(),
-            subscriber_pda.key().as_ref(),
-            api_user.key().as_ref(),
-        ],
-        bump = subscriber_pda.vault_bump,
-        token::mint = mint,
-        token::authority = subscriber_vault,
-        token::token_program = token_program,
+    mut,
+    seeds = [
+      "subscriber".as_ref(),
+      "vault".as_ref(),
+      subscriber_pda.key().as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = subscriber_pda.vault_bump,
+    token::mint = mint,
+    token::authority = subscriber_vault,
+    token::token_program = token_program,
   )]
   pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
   
@@ -60,64 +60,79 @@ pub struct PayForSubscriptionToken<'info> {
   pub vault: SystemAccount<'info>,
   
   #[account(
-        mut,
-        token::mint = mint,
-        token::token_program = token_program,
+    mut,
+    token::mint = mint,
+    token::token_program = token_program,
   )]
   pub recipient_token_account: InterfaceAccount<'info, TokenAccount>,
   
   #[account(
-        mut,
-        seeds = [
-            "api".as_ref(),
-            "vault".as_ref(),
-            api_user.key().as_ref(),
-        ],
-        bump = api_user.vault_bump,
-        token::mint = mint,
-        token::token_program = token_program,
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump,
+    token::mint = mint,
+    token::token_program = token_program,
   )]
   pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
   
   #[account(
-        seeds = [
-            "subscription".as_ref(),
-            "policy".as_ref(),
-            api_user.key().as_ref(),
-            policy_cuid.as_bytes(),
-        ],
-        bump = subscription_policy.bump,
-        has_one = recipient @ ErrorCode::InvalidRecipient,
+    mut,
+    constraint = server_token_account.mint == mint.key() @ ErrorCode::InvalidTokenMint,
+    token::mint = mint,
+    token::token_program = token_program,
+  )]
+  pub server_token_account: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
+    mut,
+    token::mint = mint,
+    token::token_program = token_program,
+  )]
+  pub subscriber_token_account: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
+    seeds = [
+      "subscription".as_ref(),
+      "policy".as_ref(),
+      api_user.key().as_ref(),
+      policy_cuid.as_bytes(),
+    ],
+    bump = subscription_policy.bump,
+    has_one = recipient @ ErrorCode::InvalidRecipient,
   )]
   pub subscription_policy: Account<'info, SubscriptionPolicy>,
   
   #[account(
-        mut,
-        seeds = [
-            "subscriber".as_ref(),
-            api_user.key().as_ref(),
-            subscriber.key().as_ref(),
-            cuid.as_bytes(),
-        ],
-        bump = subscriber_pda.bump,
-        has_one = subscriber @ ErrorCode::SubscriberMismatch,
+    mut,
+    seeds = [
+      "subscriber".as_ref(),
+      api_user.key().as_ref(),
+      subscriber.key().as_ref(),
+      cuid.as_bytes(),
+    ],
+    bump = subscriber_pda.bump,
+    has_one = subscriber @ ErrorCode::SubscriberMismatch,
   )]
   pub subscriber_pda: Account<'info, Subscriber>,
   
   #[account(
-        mut,
-        seeds = [
-            "api".as_ref(),
-            "user".as_ref(),
-            owner.key().as_ref(),
-        ],
-        bump = api_user.bump,
-        constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      owner.key().as_ref(),
+    ],
+    bump = api_user.bump,
+    constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
   pub api_user: Account<'info, ApiUser>,
   
   #[account(
-        constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
+    constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
   )]
   pub server: SystemAccount<'info>,
   
@@ -137,9 +152,9 @@ impl<'info> PayForSubscriptionToken<'info> {
     let clock_timestamp = Clock::get()?.unix_timestamp;
     
     require!(
-            ctx.accounts.subscription_policy.mint != NATIVE_SOL_MINT,
-            ErrorCode::InvalidTokenMint
-        );
+      ctx.accounts.subscription_policy.mint != NATIVE_SOL_MINT,
+      ErrorCode::InvalidTokenMint
+    );
     
     match ctx.accounts.subscriber_pda.next_charge_at {
       None => return err!(ErrorCode::SubscriberNotInitialized),
@@ -164,44 +179,41 @@ impl<'info> PayForSubscriptionToken<'info> {
       );
       
       emit_cpi!(TrialPeriodUsed {
-                account: sub_pda_key,
-                left_cycles: ctx.accounts.subscriber_pda.trial_interval_left,
-            });
+        account: sub_pda_key,
+        left_cycles: ctx.accounts.subscriber_pda.trial_interval_left,
+      });
     } else {
-      // Check max cycles
       match ctx.accounts.subscription_policy.max_cycles {
         None => {}
         Some(cycles) => {
           if cycles <= ctx.accounts.subscriber_pda.cycle_count {
             ctx.accounts.close_token_account(&cuid)?;
             emit_cpi!(SubscriptionCancelled {
-                            account: sub_pda_key,
-                            reason: CancellationReason::MaxCyclesReached,
-                        });
+              account: sub_pda_key,
+              reason: CancellationReason::MaxCyclesReached,
+            });
             return Ok(());
           }
         }
       }
       
-      // Check retry exhaustion
       match ctx.accounts.subscriber_pda.last_retry_at {
         None => {}
         Some(_) => {
           if ctx.accounts.subscriber_pda.payment_retry_count == 0 {
             ctx.accounts.close_token_account(&cuid)?;
             emit_cpi!(SubscriptionCancelled {
-                            account: sub_pda_key,
-                            reason: CancellationReason::PaymentFailed,
-                        });
+              account: sub_pda_key,
+              reason: CancellationReason::PaymentFailed,
+            });
             emit_cpi!(RemoveSubscriberRetryScheduler {
-                            account: sub_pda_key,
-                        });
+              account: sub_pda_key,
+            });
             return Ok(());
           }
         }
       }
       
-      // Insufficient token balance — schedule retry
       if vault_token_balance < ctx.accounts.subscription_policy.amount {
         match ctx.accounts.subscriber_pda.last_retry_at {
           None => {
@@ -233,7 +245,6 @@ impl<'info> PayForSubscriptionToken<'info> {
           &[ctx.accounts.subscriber_pda.vault_bump],
         ];
         
-        // Transfer api user fee
         if api_user_fee > 0 {
           transfer_checked(
             CpiContext::new_with_signer(
@@ -251,7 +262,6 @@ impl<'info> PayForSubscriptionToken<'info> {
           )?;
         }
         
-        // Transfer program fee to server (needs a server token account too)
         if program_fee > 0 {
           transfer_checked(
             CpiContext::new_with_signer(
@@ -259,7 +269,7 @@ impl<'info> PayForSubscriptionToken<'info> {
               TransferChecked {
                 from: ctx.accounts.subscriber_vault.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
-                to: ctx.accounts.vault_token_account.to_account_info(), // swap for server token account if needed
+                to: ctx.accounts.server_token_account.to_account_info(),
                 authority: ctx.accounts.subscriber_vault.to_account_info(),
               },
               &[vault_signer_seeds],
@@ -269,7 +279,6 @@ impl<'info> PayForSubscriptionToken<'info> {
           )?;
         }
         
-        // Transfer subscription amount to recipient
         if amount > 0 {
           transfer_checked(
             CpiContext::new_with_signer(
@@ -322,7 +331,6 @@ impl<'info> PayForSubscriptionToken<'info> {
       &[self.subscriber_pda.bump],
     ];
     
-    // 1. Transfer remaining tokens back to subscriber's token account
     let remaining_tokens = self.subscriber_vault.amount;
     if remaining_tokens > 0 {
       transfer_checked(
@@ -331,7 +339,7 @@ impl<'info> PayForSubscriptionToken<'info> {
           TransferChecked {
             from: self.subscriber_vault.to_account_info(),
             mint: self.mint.to_account_info(),
-            to: self.recipient_token_account.to_account_info(), // subscriber's ATA
+            to: self.subscriber_token_account.to_account_info(),
             authority: self.subscriber_vault.to_account_info(),
           },
           &[vault_signer_seeds],
@@ -341,13 +349,12 @@ impl<'info> PayForSubscriptionToken<'info> {
       )?;
     }
     
-    // 2. Close the token vault — rent lamports go back to subscriber
     close_account(
       CpiContext::new_with_signer(
         self.token_program.key(),
         CloseAccount {
           account: self.subscriber_vault.to_account_info(),
-          destination: self.subscriber.to_account_info(), // rent receiver
+          destination: self.subscriber.to_account_info(),
           authority: self.subscriber_vault.to_account_info(),
         },
         &[vault_signer_seeds],
