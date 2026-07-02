@@ -19,6 +19,11 @@ pub struct SubscriptionPolicyInitialized {
 }
 
 #[event]
+pub struct VestingPolicyInitialized {
+  pub account: Pubkey,
+}
+
+#[event]
 pub struct TransfersFundsToAuthority {
   pub account: Pubkey
 }

@@ -77,6 +77,33 @@ pub enum ErrorCode {
     #[msg("Token transfers are not yet implemented - only native SOL is supported")]
     InvalidTokenMint,
     
+    #[msg("Update authority must not be the default pubkey")]
+    InvalidUpdateAuthority,
+    
+    #[msg("Must follow the type safety")]
+    MathOverflow,
+    
+    #[msg("Cliff duration must be greater than zero and must not overflow when added to any unlock time")]
+    InvalidCliffDuration,
+    
+    #[msg("Split unlock time must not be before the policy start time")]
+    InvalidUnlockTime,
+    
+    #[msg("Split percentage must be greater than zero")]
+    InvalidSplitPercentage,
+    
+    #[msg("Duplicate unlock time found across splits")]
+    DuplicateUnlockTime,
+    
+    #[msg("At least one split must be provided")]
+    EmptySplits,
+    
+    #[msg("Active split percentages must sum to exactly 100_000_000")]
+    InvalidSplitTotal,
+    
+    #[msg("")]
+    InvalidTokenAccountOwner,
+    
     #[msg("")]
     MustFulfillRequirements,
 }

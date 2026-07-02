@@ -242,15 +242,7 @@ pub struct VestingPolicy {
   /// The SPL token mint used for vesting payouts.
   /// Use `So11111111111111111111111111111111111111112` for native SOL.
   pub token: Pubkey,
-  
-  /// The escrow vault that holds the total locked funds for this policy.
-  /// Funds are distributed to individual `VestingReceiver` vaults as
-  /// receivers are enrolled and tranches become claimable.
-  pub vault: Pubkey,
-  
-  /// PDA bump seed for the `vault` account.
-  pub vault_bump: u8,
-  
+
   /// Total amount locked in this vesting policy, denominated in
   /// the smallest unit of `token` (e.g. lamports, micro-USDC).
   /// Must equal the sum of all tranche amounts derived from `splits`.
@@ -338,6 +330,8 @@ pub struct VestingReceiver {
   ///           if `is_cancelable: false`, starts immediately at creation.
   /// `Some`  — vesting has started; tranches unlock relative to this timestamp.
   pub started_at: Option<i64>,
+  
+  pub trache_to_claim: u8,
   
   /// Unix timestamp of when this vesting was cancelled.
   /// `None`  — not cancelled; vesting is active or complete.
@@ -516,6 +510,21 @@ pub struct InitializeSubscriptionPolicyParams {
   pub max_cycles: Option<u32>,
   
   pub max_retries: u8,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct CreateVestingPolicyParams {
+  pub token: Pubkey,
+  
+  pub total_amount: u64,
+  
+  pub splits: [Option<VestingSplit>; 8],
+  
+  pub cliff_duration: Option<i64>,
+  
+  pub update_authority: Pubkey,
+  
+  pub cancel_authority: Option<Pubkey>,
 }
 
 /// Enum for status of cancellation

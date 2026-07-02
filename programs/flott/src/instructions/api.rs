@@ -4,6 +4,7 @@ pub mod deactivate;
 pub mod authorize;
 pub mod deposit;
 pub mod withdraw;
+pub mod withdraw_token;
 pub mod close;
 pub mod authority_refill;
 
@@ -13,5 +14,6 @@ pub use deactivate::*;
 pub use authorize::*;
 pub use deposit::*;
 pub use withdraw::*;
+pub use withdraw_token::*;
 pub use close::*;
 pub use authority_refill::*;
