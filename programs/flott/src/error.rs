@@ -101,9 +101,42 @@ pub enum ErrorCode {
     #[msg("Active split percentages must sum to exactly 100_000_000")]
     InvalidSplitTotal,
     
-    #[msg("")]
+    #[msg("The policy still have some receiver fro there vesting.")]
+    InvalidRequest,
+    
+    #[msg("Cancelable duration must be greater than the first split's unlock time")]
+    InvalidCancelableDuration,
+    
+    #[msg("Enrollment must be activated before this action can be performed")]
+    EnrollmentMustBeActivated,
+    
+    #[msg("Enrollment has already been cancelled")]
+    EnrollmentAlreadyCancelled,
+    
+    #[msg("This enrollment is not cancelable")]
+    EnrollmentNotCancelable,
+    
+    #[msg("Provided maker does not match the maker recorded on the vesting policy")]
+    InvalidMaker,
+    
+    #[msg("One or more required signers are invalid")]
+    InvalidSigners,
+    
+    #[msg("The cancel window for this enrollment has expired")]
+    CancelWindowExpired,
+    
+    #[msg("The activation window for this enrollment has expired")]
+    EnrollmentWindowExpired,
+    
+    #[msg("The activation window for this enrollment was not expired yet")]
+    EnrollmentWindowNotExpired,
+    
+    #[msg("This enrollment has already been activated")]
+    EnrollmentAlreadyActivated,
+    
+    #[msg("Token account owner does not match the expected owner")]
     InvalidTokenAccountOwner,
     
-    #[msg("")]
+    #[msg("All requirements must be fulfilled before this action can be performed")]
     MustFulfillRequirements,
 }

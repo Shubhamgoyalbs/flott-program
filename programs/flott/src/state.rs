@@ -262,22 +262,12 @@ pub struct VestingPolicy {
   /// Current count of active `VestingReceiver` accounts under this policy.
   /// Incremented on enrollment, decremented on cancellation or completion.
   pub receiver_count: u8,
-  
-  /// Wallet authorized to modify this vesting policy.
-  /// Can update splits, or cancel the schedule before it starts.
-  pub update_authority: Pubkey,
-  
+
   /// Optional wallet authorized to cancel this policy mid-schedule.
-  /// `None`  — policy cannot be cancelled once started.
+  /// `None`  — if possible than only maker can cancel.
   /// `Some`  — this wallet may invoke cancellation at any time.
   pub cancel_authority: Option<Pubkey>,
-  
-  /// Unix timestamp of when this policy was cancelled.
-  /// `None`  — not cancelled; policy is pending, active, or complete.
-  /// `Some`  — cancelled at this timestamp; all remaining unclaimed
-  ///           funds were returned to `maker`.
-  pub cancelled_at: Option<i64>,
-  
+
   /// Unix timestamp of when this vesting policy was created.
   pub created_at: i64,
   
@@ -326,24 +316,21 @@ pub struct VestingReceiver {
   
   /// Unix timestamp of when vesting officially begins.
   /// `None`  — if `is_cancelable: true`, vesting starts only after
-  ///           the receiver signs an acceptance instruction.
+  ///           the receiver signs an acceptance instruction with in (2 days).
   ///           if `is_cancelable: false`, starts immediately at creation.
   /// `Some`  — vesting has started; tranches unlock relative to this timestamp.
   pub started_at: Option<i64>,
   
   pub trache_to_claim: u8,
   
-  /// Unix timestamp of when this vesting was cancelled.
-  /// `None`  — not cancelled; vesting is active or complete.
-  /// `Some`  — cancelled at this timestamp; remaining unclaimed funds
-  ///           were returned to the maker.
-  pub cancelled_at: Option<i64>,
-  
   /// Total amount already claimed by the receiver across all tranches.
   pub claimed_amount: u64,
   
   /// PDA bump seed for this `VestingReceiver` account.
   pub bump: u8,
+  
+  ///the moment maker create this
+  pub created_at: i64,
   
   /// Reserved bytes for future fields or migrations without breaking account layout.
   pub _reserved: [u8; 16],
@@ -522,9 +509,16 @@ pub struct CreateVestingPolicyParams {
   
   pub cliff_duration: Option<i64>,
   
-  pub update_authority: Pubkey,
-  
   pub cancel_authority: Option<Pubkey>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct UpdateVestingPolicyParams {
+  pub total_amount: u64,
+  
+  pub splits: [Option<VestingSplit>; 8],
+  
+  pub cliff_duration: Option<i64>,
 }
 
 /// Enum for status of cancellation

@@ -6,9 +6,9 @@ use anchor_lang::{
   }
 };
 use crate::state::*;
+use crate::constants::*;
 use crate::error::ErrorCode;
 use crate::event::*;
-use crate::NATIVE_SOL_MINT;
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -16,7 +16,12 @@ use crate::NATIVE_SOL_MINT;
   cuid: String,
   policy_cuid: String
 )]
-pub struct CancelVestingEnrollment<'info> {
+pub struct DumpEnrollment<'info> {
+  #[account(
+    constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
+  )]
+  pub server: Signer<'info>,
+  
   pub authority: SystemAccount<'info>,
   
   pub owner: SystemAccount<'info>,
@@ -37,8 +42,6 @@ pub struct CancelVestingEnrollment<'info> {
     bump = vesting_policy.bump,
   )]
   pub vesting_policy: Account<'info, VestingPolicy>,
-  
-  pub cancel_authority: Signer<'info>,
   
   pub vesting_receiver: SystemAccount<'info>,
   
@@ -82,8 +85,8 @@ pub struct CancelVestingEnrollment<'info> {
   pub system_program: Program<'info, System>,
 }
 
-impl<'info> CancelVestingEnrollment<'info> {
-  pub fn handler(ctx: Context<CancelVestingEnrollment>) -> Result<()> {
+impl<'info> DumpEnrollment<'info> {
+  pub fn handler(ctx: Context<DumpEnrollment>) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
@@ -91,33 +94,15 @@ impl<'info> CancelVestingEnrollment<'info> {
       ErrorCode::InvalidTokenMint
     );
     
-    match ctx.accounts.vesting_policy.cancel_authority {
-      None => {
-        require!(ctx.accounts.maker.key() == ctx.accounts.cancel_authority.key(), ErrorCode::InvalidSigners);
-      }
-      Some(adr) => {
-        require!(adr == ctx.accounts.cancel_authority.key(), ErrorCode::InvalidSigners);
-      }
-    }
-    
     let clock = Clock::get()?;
     
-    match ctx.accounts.vesting_receiver_pda.started_at {
-      None => {
-        return err!(ErrorCode::EnrollmentMustBeActivated)
-      }
-      Some(at) => {
-        match ctx.accounts.vesting_receiver_pda.is_cancelable {
-          None => return err!(ErrorCode::EnrollmentNotCancelable),
-          Some(cancelable_after) => {
-            require!(
-              clock.unix_timestamp - at <= cancelable_after,
-              ErrorCode::CancelWindowExpired
-            );
-          }
-        }
-      }
-    }
+    require!(
+      ctx.accounts.vesting_receiver_pda.started_at.is_none(),
+      ErrorCode::EnrollmentAlreadyActivated
+    );
+    
+    let time_gap = clock.unix_timestamp - ctx.accounts.vesting_receiver_pda.created_at;
+    require!(time_gap > 172800, ErrorCode::EnrollmentWindowNotExpired);
     
     let vault_lamports = ctx.accounts.vesting_vault.lamports();
     
@@ -145,7 +130,7 @@ impl<'info> CancelVestingEnrollment<'info> {
       )?;
     }
     
-    emit_cpi!(EnrollmentCancelled {
+    emit_cpi!(EnrollmentDumped {
       account: ctx.accounts.vesting_receiver_pda.key()
     });
     

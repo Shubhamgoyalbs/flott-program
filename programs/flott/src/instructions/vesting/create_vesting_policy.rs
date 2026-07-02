@@ -8,7 +8,6 @@ use crate::event::*;
 #[event_cpi]
 #[derive(Accounts)]
 #[instruction(
-  cuid: String,
   policy_cuid: String
 )]
 pub struct CreateVestingPolicy<'info> {
@@ -56,8 +55,6 @@ impl<'info> CreateVestingPolicy<'info> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(params.total_amount > 0, ErrorCode::InvalidAmount);
-    
-    require_keys_neq!(params.update_authority, Pubkey::default(), ErrorCode::InvalidUpdateAuthority);
     
     let clock = Clock::get()?;
     
@@ -109,9 +106,7 @@ impl<'info> CreateVestingPolicy<'info> {
     ctx.accounts.vesting_policy.splits = params.splits;
     ctx.accounts.vesting_policy.cliff_duration = params.cliff_duration;
     ctx.accounts.vesting_policy.receiver_count = 0;
-    ctx.accounts.vesting_policy.update_authority = params.update_authority;
     ctx.accounts.vesting_policy.cancel_authority = params.cancel_authority;
-    ctx.accounts.vesting_policy.cancelled_at = None;
     ctx.accounts.vesting_policy.created_at = clock.unix_timestamp;
     ctx.accounts.vesting_policy.updated_at = None;
     ctx.accounts.vesting_policy._reserved = [0u8; 32];

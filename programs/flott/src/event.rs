@@ -24,6 +24,21 @@ pub struct VestingPolicyInitialized {
 }
 
 #[event]
+pub struct VestingPolicyUpdated {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct VestingPolicyCanceled {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct EnrolledInVestingPolicy {
+  pub account: Pubkey,
+}
+
+#[event]
 pub struct TransfersFundsToAuthority {
   pub account: Pubkey
 }
@@ -62,6 +77,21 @@ pub struct RemoveSubscriberRetryScheduler {
 
 #[event]
 pub struct PaymentSuccessfulSubscription {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct EnrollmentActivated {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct EnrollmentCancelled {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct EnrollmentDumped {
   pub account: Pubkey,
 }
 
