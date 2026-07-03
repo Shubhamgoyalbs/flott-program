@@ -139,4 +139,7 @@ pub enum ErrorCode {
     
     #[msg("All requirements must be fulfilled before this action can be performed")]
     MustFulfillRequirements,
+    
+    #[msg("")]
+    InvalidClaim,
 }

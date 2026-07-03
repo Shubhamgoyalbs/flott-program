@@ -55,7 +55,6 @@ pub struct DumpToken<'info> {
     associated_token::mint = mint,
     associated_token::authority = maker,
     associated_token::token_program = token_program,
-    constraint = maker_ata.amount >= vesting_policy.total_amount @ ErrorCode::InsufficientAmount,
   )]
   pub maker_ata: InterfaceAccount<'info, TokenAccount>,
   
@@ -152,7 +151,7 @@ impl<'info> DumpToken<'info> {
             from: ctx.accounts.vesting_vault.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
             to: ctx.accounts.maker_ata.to_account_info(),
-            authority: ctx.accounts.maker.to_account_info(),
+            authority: ctx.accounts.vesting_vault.to_account_info(),
           },
           signer_seeds
         ),

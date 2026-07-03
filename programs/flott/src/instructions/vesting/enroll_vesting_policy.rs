@@ -115,6 +115,7 @@ impl<'info> EnrollInVestingPolicy<'info> {
     ctx.accounts.vesting_receiver_pda.started_at = if is_starting { Some(clock.unix_timestamp) } else { None } ;
     ctx.accounts.vesting_receiver_pda.trache_to_claim = 0;
     ctx.accounts.vesting_receiver_pda.bump = ctx.bumps.vesting_receiver_pda;
+    ctx.accounts.vesting_receiver_pda.claimed_amount = 0;
     ctx.accounts.vesting_receiver_pda.created_at = clock.unix_timestamp;
     ctx.accounts.vesting_receiver_pda._reserved = [0u8; 16];
     

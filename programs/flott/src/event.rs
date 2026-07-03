@@ -100,3 +100,13 @@ pub struct SubscriberActivated {
   pub account: Pubkey
 }
 
+#[event]
+pub struct CompletedVesting {
+  pub account: Pubkey
+}
+
+#[event]
+pub struct ClaimedVestingTranche {
+  pub account: Pubkey
+}
+
