@@ -61,6 +61,18 @@ pub struct ClaimVestingTranche<'info> {
   #[account(
     mut,
     seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump
+  )]
+  pub vault: SystemAccount<'info>,
+  
+  #[account(
+    mut,
+    seeds = [
       "vesting".as_ref(),
       "vault".as_ref(),
       vesting_receiver_pda.key().as_ref(),
@@ -163,7 +175,41 @@ impl<'info> ClaimVestingTranche<'info> {
         
         require!(gap > split.unlock_at, ErrorCode::InvalidClaim);
         
-        let amount = (split.percentage as u64 * ctx.accounts.vesting_policy.total_amount) / 1_000_000;
+        let amount = (split.percentage as u64 * ctx.accounts.vesting_policy.total_amount) / 100_000_000;
+        
+        let server_fee = (amount * PROGRAM_FEE as u64) / 100_000_000;
+        
+        let api_fee = (amount * ctx.accounts.api_user.fee_percentage as u64) / 100_000_000;
+        
+        let receiving_amount = amount
+          .checked_sub(server_fee)
+          .unwrap()
+          .checked_sub(api_fee)
+          .unwrap();
+        
+        transfer(
+          CpiContext::new_with_signer(
+            ctx.accounts.system_program.key(),
+            Transfer {
+              from: ctx.accounts.vesting_vault.to_account_info(),
+              to: ctx.accounts.server.to_account_info(),
+            },
+            vault_signer_seeds,
+          ),
+          server_fee,
+        )?;
+        
+        transfer(
+          CpiContext::new_with_signer(
+            ctx.accounts.system_program.key(),
+            Transfer {
+              from: ctx.accounts.vesting_vault.to_account_info(),
+              to: ctx.accounts.vault.to_account_info(),
+            },
+            vault_signer_seeds,
+          ),
+          api_fee,
+        )?;
         
         transfer(
           CpiContext::new_with_signer(
@@ -174,7 +220,7 @@ impl<'info> ClaimVestingTranche<'info> {
             },
             vault_signer_seeds,
           ),
-          amount,
+          receiving_amount,
         )?;
         
         ctx.accounts.vesting_receiver_pda.claimed_amount += amount;

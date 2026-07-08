@@ -110,10 +110,7 @@ pub struct Order {
   /// `Some`  — only the specified wallet can pay.
   pub payer: Option<Pubkey>,
   
-  /// Determines where funds are sent after payment.
-  /// `None`  — a split policy governs distribution (see `Split` account).
-  /// `Some`  — the entire amount goes to this single recipient.
-  pub recipient: Option<Pubkey>,
+  pub bump: u8,
   
   /// Unix timestamp of when this order was created.
   pub created_at: i64,
@@ -148,7 +145,8 @@ pub struct Refund {
   /// Unix timestamp after which this refund is no longer claimable.
   /// Once `Clock::get().unix_timestamp > refund_valid_until`,
   /// the refund is considered expired and this account should be closed.
-  pub refund_valid_until: i64,
+  /// `None` only if `non-refundable amount is 100%`
+  pub refund_valid_until: Option<i64>,
   
   /// Populated once the associated order is paid.
   /// `None`  — order has not been paid yet.
@@ -157,10 +155,12 @@ pub struct Refund {
   
   /// The escrow vault that holds the payer's funds until
   /// the refund is claimed or the window expires.
-  pub vault: Pubkey,
+  /// `None` only if `non-refundable amount is 100%`
+  pub vault: Option<Pubkey>,
   
   /// PDA bump seed for the `vault` account.
-  pub vault_bump: u8,
+  /// `None` only if `non-refundable amount is 100%`
+  pub vault_bump: Option<u8>,
   
   /// Reserved bytes for future fields or migrations without breaking account layout.
   pub _reserved: [u8; 16],
@@ -184,7 +184,7 @@ pub struct Expiry {
   
   /// Optional wallet authorized to extend the order's expiry deadline.
   /// `None`  — expiry cannot be extended; order expires at `expires_at`.
-  /// `Some`  — the specified wallet may call the extend instruction,
+  /// `Some`  — the specified wallet may call the extent instruction (can extend the for 12 hours in single instruction),
   ///           which requires payment of an additional extension fee.
   pub extend_authority: Option<Pubkey>,
   
@@ -194,7 +194,7 @@ pub struct Expiry {
   ///           valid till 0if extend policy not exists
   pub extended_count: Option<u8>,
   
-  /// hard ceiling — cannot extend beyond this timestamp
+  /// hard ceiling — cannot extend beyond this timestamp must be under 10 days
   pub max_expires_at: i64,
   
   /// Reserved bytes for future fields or migrations without breaking account layout.
@@ -510,6 +510,33 @@ pub struct CreateVestingPolicyParams {
   pub cliff_duration: Option<i64>,
   
   pub cancel_authority: Option<Pubkey>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct InitializeOrderParams {
+  pub metadata: [u8; 32],
+  
+  pub total_amount: u64,
+  
+  pub token: Pubkey,
+  
+  pub payer: Option<Pubkey>,
+  
+  pub non_refundable_percentage: u32,
+  
+  pub refund_valid_until: Option<i64>,
+  
+  pub expires_at: i64,
+  
+  pub extend_authority: Option<Pubkey>,
+  
+  pub extended_count: Option<u8>,
+  
+  pub max_expires_at: i64,
+  
+  pub shares: [Option<SplitShare>; 7],
+  
+  pub refund_vault_amount: u64,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

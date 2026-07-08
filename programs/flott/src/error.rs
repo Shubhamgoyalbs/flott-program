@@ -101,7 +101,7 @@ pub enum ErrorCode {
     #[msg("Active split percentages must sum to exactly 100_000_000")]
     InvalidSplitTotal,
     
-    #[msg("The policy still have some receiver fro there vesting.")]
+    #[msg("The policy still have some receiver for there vesting.")]
     InvalidRequest,
     
     #[msg("Cancelable duration must be greater than the first split's unlock time")]
@@ -140,6 +140,24 @@ pub enum ErrorCode {
     #[msg("All requirements must be fulfilled before this action can be performed")]
     MustFulfillRequirements,
     
-    #[msg("")]
+    #[msg("The specified time to claim the tranche not reached yet")]
     InvalidClaim,
+    
+    #[msg("Invalid expiry time - must be within 10 days of creation")]
+    InvalidExpiry,
+    
+    #[msg("Invalid refund configuration - when non_refundable_percentage < 100%, refund_valid_until must be set")]
+    InvalidRefundConfig,
+    
+    #[msg("Extended count must be greater than zero when provided")]
+    InvalidExtendedCount,
+    
+    #[msg("Extend limit has been reached - no more extensions allowed")]
+    ExtendLimitReached,
+    
+    #[msg("Extension too soon - must wait at least 1 hour before extending")]
+    ExtendTooSoon,
+    
+    #[msg("Cannot extend beyond max expiry time")]
+    MaxExpiryExceeded,
 }

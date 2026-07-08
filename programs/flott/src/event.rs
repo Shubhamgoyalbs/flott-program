@@ -110,3 +110,13 @@ pub struct ClaimedVestingTranche {
   pub account: Pubkey
 }
 
+#[event]
+pub struct OrderInitialized {
+  pub account: Pubkey
+}
+
+#[event]
+pub struct OrderExpiryExtended {
+  pub account: Pubkey,
+}
+

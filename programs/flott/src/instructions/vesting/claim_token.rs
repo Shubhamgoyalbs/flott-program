@@ -78,6 +78,39 @@ pub struct ClaimToken<'info> {
   pub receiver_ata: InterfaceAccount<'info, TokenAccount>,
   
   #[account(
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump
+  )]
+  pub vault: SystemAccount<'info>,
+  
+  #[account(
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump,
+    token::mint = mint,
+    token::token_program = token_program,
+  )]
+  pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
+    mut,
+    associated_token::mint = mint,
+    associated_token::authority = server,
+    associated_token::token_program = token_program,
+  )]
+  pub server_token_account: InterfaceAccount<'info, TokenAccount>,
+  
+  #[account(
     init,
     payer = maker,
     space = VestingReceiver::INIT_SPACE + 8,
@@ -223,7 +256,32 @@ impl<'info> ClaimToken<'info> {
         
         require!(gap > split.unlock_at, ErrorCode::InvalidClaim);
         
-        let amount = (split.percentage as u64 * ctx.accounts.vesting_policy.total_amount) / 1_000_000;
+        let amount = (split.percentage as u64 * ctx.accounts.vesting_policy.total_amount) / 100_000_000;
+        
+        let server_fee = (amount * PROGRAM_FEE as u64) / 100_000_000;
+        
+        let api_fee = (amount * ctx.accounts.api_user.fee_percentage as u64) / 100_000_000;
+        
+        let receiving_amount = amount
+          .checked_sub(server_fee)
+          .unwrap()
+          .checked_sub(api_fee)
+          .unwrap();
+        
+        transfer_checked(
+          CpiContext::new_with_signer(
+            ctx.accounts.token_program.key(),
+            TransferChecked {
+              from: ctx.accounts.vesting_vault.to_account_info(),
+              mint: ctx.accounts.mint.to_account_info(),
+              to: ctx.accounts.server_token_account.to_account_info(),
+              authority: ctx.accounts.vesting_vault.to_account_info(),
+            },
+            vault_signer_seeds
+          ),
+          server_fee,
+          ctx.accounts.mint.decimals,
+        )?;
         
         transfer_checked(
           CpiContext::new_with_signer(
@@ -236,10 +294,24 @@ impl<'info> ClaimToken<'info> {
             },
             vault_signer_seeds
           ),
-          amount,
+          receiving_amount,
           ctx.accounts.mint.decimals,
         )?;
         
+        transfer_checked(
+          CpiContext::new_with_signer(
+            ctx.accounts.token_program.key(),
+            TransferChecked {
+              from: ctx.accounts.vesting_vault.to_account_info(),
+              mint: ctx.accounts.mint.to_account_info(),
+              to: ctx.accounts.vault_token_account.to_account_info(),
+              authority: ctx.accounts.vesting_vault.to_account_info(),
+            },
+            vault_signer_seeds
+          ),
+          api_fee,
+          ctx.accounts.mint.decimals,
+        )?;
         
         ctx.accounts.vesting_receiver_pda.claimed_amount += amount;
         ctx.accounts.vesting_receiver_pda.trache_to_claim += 1;
