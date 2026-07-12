@@ -1,21 +1,24 @@
 use anchor_lang::{
   prelude::*,
-  system_program::{
-    transfer,
-    Transfer
-  }
+};
+use anchor_spl::{
+  token::Mint,
+  token_interface::{
+    TokenInterface, TokenAccount,
+  },
 };
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
-use crate::constants::NATIVE_SOL_MINT;
+use crate::constants::*;
 
 #[event_cpi]
 #[derive(Accounts)]
 #[instruction(
   cuid: String,
+  token: Pubkey 
 )]
-pub struct InitializeOrder<'info> {
+pub struct InitializeOrderToken<'info> {
   #[account(mut)]
   pub authority: Signer<'info>,
   
@@ -74,15 +77,24 @@ pub struct InitializeOrder<'info> {
   pub split: Account<'info, Split>,
   
   #[account(
-    mut,
+    constraint = mint.key() == token @ ErrorCode::InvalidTokenMint,
+  )]
+  pub mint: Account<'info, Mint>,
+  
+  #[account(
+    init,
+    payer = authority,
     seeds = [
       "refund".as_ref(),
       "vault".as_ref(),
       refund.key().as_ref(),
     ],
     bump,
+    token::mint = mint,
+    token::authority = refund_vault,
+    token::token_program = token_program,
   )]
-  pub refund_vault: SystemAccount<'info>,
+  pub refund_vault: InterfaceAccount<'info, TokenAccount>,
   
   #[account(
     mut,
@@ -96,15 +108,20 @@ pub struct InitializeOrder<'info> {
   )]
   pub api_user: Account<'info, ApiUser>,
   
+  pub token_program: Interface<'info, TokenInterface>,
+  
   pub system_program: Program<'info, System>,
 }
 
-impl<'info> InitializeOrder<'info> {
+impl<'info> InitializeOrderToken<'info> {
   pub fn handler(
+    token: Pubkey,
     params: InitializeOrderParams,
-    ctx: Context<InitializeOrder>
+    ctx: Context<InitializeOrderToken>
   ) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
+    
+    require!(token != NATIVE_SOL_MINT, ErrorCode::InvalidTokenMint);
     
     require!(params.total_amount > 0, ErrorCode::InvalidAmount);
     
@@ -155,7 +172,7 @@ impl<'info> InitializeOrder<'info> {
     
     ctx.accounts.order.metadata = params.metadata;
     ctx.accounts.order.total_amount = params.total_amount;
-    ctx.accounts.order.token = NATIVE_SOL_MINT;
+    ctx.accounts.order.token = token;
     ctx.accounts.order.api_user = ctx.accounts.api_user.key();
     ctx.accounts.order.payer = params.payer;
     ctx.accounts.order.created_at = clock.unix_timestamp;
