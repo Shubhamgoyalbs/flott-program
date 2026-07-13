@@ -255,11 +255,7 @@ impl <'info > PayForSubscription<'info> {
   }
   
   pub fn close_account(&self, cuid: &str) -> Result<()> {
-    
-    let subscriber_pda = &self.subscriber_pda;
-    
     let vault_balance = self.subscriber_vault.lamports();
-    let pda_balance = subscriber_pda.get_lamports();
     
     let sub_pda_key = self.subscriber_pda.key();
     let sub_key = self.subscriber.key();
@@ -292,20 +288,7 @@ impl <'info > PayForSubscription<'info> {
       vault_balance,
     )?;
     
-    transfer(
-      CpiContext::new_with_signer(
-        self.system_program.key(),
-        Transfer {
-          from: self.subscriber_pda.to_account_info(),
-          to: self.vault.to_account_info(),
-        },
-        &[pda_signer_seeds],
-      ),
-      pda_balance
-    )?;
-    
-    self.subscriber_pda.to_account_info().data.borrow_mut().fill(0);
-    self.subscriber_pda.to_account_info().assign(&System::id());
+    self.subscriber_pda.close(self.vault.to_account_info())?;
     
     Ok(())
   }

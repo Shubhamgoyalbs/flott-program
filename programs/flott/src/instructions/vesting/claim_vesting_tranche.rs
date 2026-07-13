@@ -153,21 +153,11 @@ impl<'info> ClaimVestingTranche<'info> {
           vault_lamports,
         )?;
         
-        transfer(
-          CpiContext::new_with_signer(
-            ctx.accounts.system_program.key(),
-            Transfer {
-              from: ctx.accounts.vesting_receiver_pda.to_account_info(),
-              to: ctx.accounts.maker.to_account_info(),
-            },
-            pda_signer_seeds,
-          ),
-          pda_lamports,
-        )?;
+        ctx.accounts.vesting_receiver_pda.close(ctx.accounts.maker.to_account_info())?;
         
         emit_cpi!(CompletedVesting {
-      account: ctx.accounts.vesting_receiver_pda.key(),
-     });
+          account: ctx.accounts.vesting_receiver_pda.key(),
+        });
       }
       Some(split) => {
         
@@ -227,8 +217,8 @@ impl<'info> ClaimVestingTranche<'info> {
         ctx.accounts.vesting_receiver_pda.trache_to_claim += 1;
         
         emit_cpi!(ClaimedVestingTranche {
-      account: ctx.accounts.vesting_receiver_pda.key(),
-     })
+          account: ctx.accounts.vesting_receiver_pda.key(),
+        })
       }
     }
     

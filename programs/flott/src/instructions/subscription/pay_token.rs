@@ -312,7 +312,6 @@ impl<'info> PayForSubscriptionToken<'info> {
   
   pub fn close_token_account(&self, cuid: &str) -> Result<()> {
     let sub_pda_key = self.subscriber_pda.key();
-    let sub_key = self.subscriber.key();
     let api_user_key = self.api_user.key();
     
     let vault_signer_seeds: &[&[u8]] = &[
@@ -321,14 +320,6 @@ impl<'info> PayForSubscriptionToken<'info> {
       sub_pda_key.as_ref(),
       api_user_key.as_ref(),
       &[self.subscriber_pda.vault_bump],
-    ];
-    
-    let pda_signer_seeds: &[&[u8]] = &[
-      b"subscriber",
-      api_user_key.as_ref(),
-      sub_key.as_ref(),
-      cuid.as_bytes(),
-      &[self.subscriber_pda.bump],
     ];
     
     let remaining_tokens = self.subscriber_vault.amount;
@@ -361,20 +352,7 @@ impl<'info> PayForSubscriptionToken<'info> {
       ),
     )?;
     
-    transfer(
-      CpiContext::new_with_signer(
-        self.system_program.key(),
-        Transfer {
-          from: self.subscriber_pda.to_account_info(),
-          to: self.vault.to_account_info(),
-        },
-        &[pda_signer_seeds],
-      ),
-      self.subscriber_pda.get_lamports()
-    )?;
-    
-    self.subscriber_pda.to_account_info().data.borrow_mut().fill(0);
-    self.subscriber_pda.to_account_info().assign(&System::id());
+    self.subscriber_pda.close(self.vault.to_account_info())?;
     
     Ok(())
   }

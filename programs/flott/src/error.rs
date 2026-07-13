@@ -185,29 +185,24 @@ pub enum ErrorCode {
     #[msg("Order has already been paid")]
     OrderAlreadyPaid,
     
-    #[msg("This feature is not yet implemented")]
-    NotImplemented,
-    
-    #[msg("")]
+    #[msg("Account must be writable to perform this operation")]
     AccountNotWritable,
     
-    #[msg("")]
+    #[msg("Order has not expired yet - this action is only available after expiry")]
     OrderNotExpiredYet,
     
-    #[msg("")]
+    #[msg("Token account owner does not match the expected owner")]
     TokenAccountOwnerMismatch,
     
-    #[msg("")]
+    #[msg("The provided token account is invalid for this operation")]
     InvalidTokenAccount,
     
-    #[msg("")]
+    #[msg("Split distribution is incomplete - not all splits have been paid out")]
     IncompleteSplitDistribution,
     
-    #[msg("")]
+    #[msg("Number of accounts provided does not match the expected count")]
     AccountCountMismatch,
     
-    #[msg("")]
+    #[msg("Provided share receiver does not match the expected recipient for this split")]
     InvalidShareReceiver,
-    
-    
 }

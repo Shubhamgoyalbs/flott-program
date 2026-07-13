@@ -40,7 +40,7 @@ pub struct EnrollInVestingPolicy<'info> {
   #[account(
     init,
     payer = maker,
-    space = VestingPolicy::INIT_SPACE + 8,
+    space = VestingReceiver::INIT_SPACE + 8,
     seeds = [
       "vesting".as_ref(),
       "receiver".as_ref(),
@@ -110,7 +110,7 @@ impl<'info> EnrollInVestingPolicy<'info> {
     ctx.accounts.vesting_receiver_pda.vesting_policy = ctx.accounts.vesting_policy.key();
     ctx.accounts.vesting_receiver_pda.vault = ctx.accounts.vesting_vault.key();
     ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_vault;
-    ctx.accounts.vesting_receiver_pda.receiver = ctx.accounts.vesting_receiver_pda.key();
+    ctx.accounts.vesting_receiver_pda.receiver = ctx.accounts.vesting_receiver.key();
     ctx.accounts.vesting_receiver_pda.is_cancelable = is_cancelable;
     ctx.accounts.vesting_receiver_pda.started_at = if is_starting { Some(clock.unix_timestamp) } else { None } ;
     ctx.accounts.vesting_receiver_pda.trache_to_claim = 0;
