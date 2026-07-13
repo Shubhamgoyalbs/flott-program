@@ -5,13 +5,15 @@ use anchor_spl::{
   token_interface::{
     TokenInterface, TokenAccount,
     transfer_checked, TransferChecked,
-    close_account, CloseAccount
+    close_account, CloseAccount,
   },
+  token_interface
 };
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
 use crate::constants::*;
+use crate::RefundPayout;
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -45,6 +47,17 @@ pub struct RefundPayoutToken<'info> {
     bump = expiry.bump,
   )]
   pub expiry: Account<'info, Expiry>,
+  
+  #[account(
+    mut,
+    close = vault,
+    seeds = [
+      "split".as_ref(),
+      order.key().as_ref(),
+    ],
+    bump = split.bump,
+  )]
+  pub split: Account<'info, Split>,
   
   #[account(
     mut,
@@ -118,7 +131,7 @@ pub struct RefundPayoutToken<'info> {
 }
 
 impl<'info> RefundPayoutToken<'info> {
-  pub fn handler(ctx: Context<RefundPayoutToken>) -> Result<()> {
+  pub fn handler<'a>(ctx: Context<'a, RefundPayoutToken<'a>>) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
@@ -156,21 +169,74 @@ impl<'info> RefundPayoutToken<'info> {
     ];
     
     let vault_balance = ctx.accounts.refund_vault.amount;
+    let amount = ctx.accounts.order.total_amount;
+    let decimals = ctx.accounts.mint.decimals;
+    let mint_key = ctx.accounts.mint.key();
     
-    transfer_checked(
-      CpiContext::new_with_signer(
-        ctx.accounts.token_program.key(),
-        TransferChecked {
-          from: ctx.accounts.refund_vault.to_account_info(),
-          mint: ctx.accounts.mint.to_account_info(),
-          to: ctx.accounts.maker_token_account.to_account_info(),
-          authority: ctx.accounts.refund_vault.to_account_info(),
-        },
-        &[vault_seeds],
-      ),
-      vault_balance,
-      ctx.accounts.mint.decimals,
-    )?;
+    let expected_count = ctx.accounts.split.shares
+      .iter()
+      .filter(|s| s.is_some())
+      .count();
+    
+    require!(
+      ctx.remaining_accounts.len() == expected_count,
+      ErrorCode::AccountCountMismatch
+    );
+    
+    let mut percentage_sum: u64 = 0;
+    let mut total_transferred: u64 = 0;
+    
+    for account_info in ctx.remaining_accounts.iter() {
+      require!(account_info.is_writable, ErrorCode::AccountNotWritable);
+      
+      let token_account_data =
+        InterfaceAccount::<TokenAccount>::try_from(account_info)
+          .map_err(|_| ErrorCode::InvalidTokenAccount)?;
+      
+      require!(
+        token_account_data.mint == mint_key,
+        ErrorCode::InvalidTokenMint
+      );
+      
+      let share = ctx.accounts.split.shares
+        .iter()
+        .find_map(|s| s.filter(|sh| sh.account == account_info.key()))
+        .ok_or(ErrorCode::InvalidShareReceiver)?;
+      
+      let amount_to_transfer = (amount * share.percentage as u64) / 100_000_000;
+      
+      transfer_checked(
+        CpiContext::new_with_signer(
+          ctx.accounts.token_program.key(),
+          TransferChecked {
+            from: ctx.accounts.refund_vault.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            to: account_info.to_account_info(),
+            authority: ctx.accounts.refund_vault.to_account_info(),
+          },
+          &[vault_seeds],
+        ),
+        amount_to_transfer,
+        decimals,
+      )?;
+      
+      total_transferred = total_transferred
+        .checked_add(amount_to_transfer)
+        .ok_or(ErrorCode::MathOverflow)?;
+      percentage_sum = percentage_sum
+        .checked_add(share.percentage as u64)
+        .ok_or(ErrorCode::MathOverflow)?;
+    }
+    
+    require!(
+      percentage_sum == 100_000_000,
+      ErrorCode::IncompleteSplitDistribution
+    );
+    
+    require!(
+      total_transferred <= vault_balance,
+      ErrorCode::InsufficientVaultBalance
+    );
     
     close_account(
       CpiContext::new_with_signer(
@@ -183,9 +249,6 @@ impl<'info> RefundPayoutToken<'info> {
         &[vault_seeds],
       ),
     )?;
-    
-    ctx.accounts.refund.vault = None;
-    ctx.accounts.refund.vault_bump = None;
     
     emit_cpi!(RefundPaidOut {
       account: ctx.accounts.order.key(),

@@ -120,3 +120,24 @@ pub struct OrderExpiryExtended {
   pub account: Pubkey,
 }
 
+#[event]
+pub struct RefundPaidOut {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct OrderPaid {
+  pub account: Pubkey,
+}
+
+#[event]
+pub struct OrderCompleted {
+  pub account: Pubkey,
+}
+
+
+#[event]
+pub struct OrderExpired {
+  pub account: Pubkey,
+}
+

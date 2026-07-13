@@ -108,7 +108,7 @@ pub struct RefundPayout<'info> {
 }
 
 impl<'info> RefundPayout<'info> {
-  pub fn handler(ctx: Context<RefundPayout>) -> Result<()> {
+  pub fn handler<'a>(ctx: Context<'a, RefundPayout<'a>>) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
@@ -148,17 +148,28 @@ impl<'info> RefundPayout<'info> {
     
     let vault_balance = ctx.accounts.refund_vault.lamports();
     
-    let mut percentage_sum = 0;
-    let mut index: usize = 0;
     let amount = ctx.accounts.order.total_amount;
+    
+    let expected_count = ctx.accounts.split.shares
+      .iter()
+      .filter(|s| s.is_some())
+      .count();
+    
+    require!(
+      ctx.remaining_accounts.len() == expected_count,
+      ErrorCode::AccountCountMismatch
+    );
+    
+    let mut percentage_sum: u64 = 0;
+    let mut total_transferred: u64 = 0;
     
     for account_info in ctx.remaining_accounts.iter() {
       require!(account_info.is_writable, ErrorCode::AccountNotWritable);
-      require!(ctx.accounts.split.shares[index].is_some(), ErrorCode::InvalidSplitPercentage);
       
-      let share = ctx.accounts.split.shares[index].unwrap();
-      
-      require!(share.account == account_info.key(), ErrorCode::InvalidShareReceiver);
+      let share = ctx.accounts.split.shares
+        .iter()
+        .find_map(|s| s.filter(|sh| sh.account == account_info.key()))
+        .ok_or(ErrorCode::InvalidShareReceiver)?;
       
       let amount_to_transfer = (amount * share.percentage as u64) / 100_000_000;
       
@@ -174,16 +185,35 @@ impl<'info> RefundPayout<'info> {
         amount_to_transfer,
       )?;
       
-      index += 1;
-      percentage_sum += share.percentage;
-      
-      if percentage_sum == 100_000_000 {
-        break;
-      }
+      total_transferred = total_transferred
+        .checked_add(amount_to_transfer)
+        .ok_or(ErrorCode::MathOverflow)?;
+      percentage_sum = percentage_sum
+        .checked_add(share.percentage as u64)
+        .ok_or(ErrorCode::MathOverflow)?;
     }
     
-    ctx.accounts.refund.vault = None;
-    ctx.accounts.refund.vault_bump = None;
+    require!(
+      percentage_sum == 100_000_000,
+      ErrorCode::IncompleteSplitDistribution
+    );
+    
+    require!(
+      total_transferred <= vault_balance,
+      ErrorCode::InsufficientVaultBalance
+    );
+    
+    transfer(
+      CpiContext::new_with_signer(
+        ctx.accounts.system_program.key(),
+        Transfer {
+          from: ctx.accounts.refund_vault.to_account_info(),
+          to: ctx.accounts.vault.to_account_info(),
+        },
+        signer_seeds,
+      ),
+      ctx.accounts.refund_vault.lamports(),
+    )?;
     
     emit_cpi!(RefundPaidOut {
       account: ctx.accounts.order.key(),

@@ -1,9 +1,11 @@
 use anchor_lang::{
   prelude::*,
 };
+use anchor_lang::system_program::{transfer, Transfer};
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
+use crate::constants::*;
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -23,6 +25,18 @@ pub struct ExtendExpiry<'info> {
     bump = order.bump,
   )]
   pub order: Account<'info, Order>,
+  
+  #[account(
+    mut,
+    seeds = [
+      "api".as_ref(),
+      "user".as_ref(),
+      "vault".as_ref(),
+      api_user.key().as_ref(),
+    ],
+    bump = api_user.vault_bump
+  )]
+  pub vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -51,6 +65,8 @@ pub struct ExtendExpiry<'info> {
   pub api_user: Account<'info, ApiUser>,
   
   pub owner: SystemAccount<'info>,
+  
+  pub system_program: Program<'info, System>,
 }
 
 impl<'info> ExtendExpiry<'info> {
@@ -79,6 +95,19 @@ impl<'info> ExtendExpiry<'info> {
     let new_expires_at = ctx.accounts.expiry.expires_at.checked_add(extension_duration).ok_or(ErrorCode::MathOverflow)?;
     
     require!(new_expires_at <= ctx.accounts.expiry.max_expires_at, ErrorCode::MaxExpiryExceeded);
+    
+    let extend_fee = (ctx.accounts.order.total_amount * EXPIRY_EXTEND_FEE) / 100_000_000;
+    
+    transfer(
+      CpiContext::new(
+        ctx.accounts.system_program.key(),
+        Transfer {
+          from: ctx.accounts.extend_authority.to_account_info(),
+          to: ctx.accounts.vault.to_account_info(),
+        },
+      ),
+      extend_fee,
+    )?;
     
     ctx.accounts.expiry.expires_at = new_expires_at;
     ctx.accounts.expiry.extended_count = Some(current_extended_count.checked_sub(1).ok_or(ErrorCode::MathOverflow)?);

@@ -160,4 +160,54 @@ pub enum ErrorCode {
     
     #[msg("Cannot extend beyond max expiry time")]
     MaxExpiryExceeded,
+    
+    #[msg("Refund is fully non-refundable (100% non-refundable percentage)")]
+    FullyNonRefundable,
+    
+    #[msg("Refund window is still active - cannot payout before refund_valid_until")]
+    RefundWindowActive,
+    
+    #[msg("Refund vault is missing or not configured")]
+    RefundVaultMissing,
+    
+    #[msg("Nothing to refund - vault balance is zero")]
+    NothingToRefund,
+    
+    #[msg("Order has not been paid yet - refund cannot be claimed")]
+    OrderNotPaidYet,
+    
+    #[msg("Payer does not match the expected payer for this order")]
+    PayerMismatch,
+    
+    #[msg("Invalid vault account provided")]
+    InvalidVault,
+    
+    #[msg("Order has already been paid")]
+    OrderAlreadyPaid,
+    
+    #[msg("This feature is not yet implemented")]
+    NotImplemented,
+    
+    #[msg("")]
+    AccountNotWritable,
+    
+    #[msg("")]
+    OrderNotExpiredYet,
+    
+    #[msg("")]
+    TokenAccountOwnerMismatch,
+    
+    #[msg("")]
+    InvalidTokenAccount,
+    
+    #[msg("")]
+    IncompleteSplitDistribution,
+    
+    #[msg("")]
+    AccountCountMismatch,
+    
+    #[msg("")]
+    InvalidShareReceiver,
+    
+    
 }

@@ -518,8 +518,6 @@ pub struct InitializeOrderParams {
   
   pub total_amount: u64,
   
-  pub token: Pubkey,
-  
   pub payer: Option<Pubkey>,
   
   pub non_refundable_percentage: u32,
