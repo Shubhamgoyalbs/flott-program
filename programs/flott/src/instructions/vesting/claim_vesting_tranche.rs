@@ -113,18 +113,7 @@ impl<'info> ClaimVestingTranche<'info> {
     );
     
     let receiver_pda_key = ctx.accounts.vesting_receiver_pda.key();
-    let receiver_key = ctx.accounts.vesting_receiver.key();
-    let policy_key = ctx.accounts.vesting_policy.key();
     let vault_bump = ctx.accounts.vesting_receiver_pda.vault_bump;
-    
-    let pda_signer_seeds: &[&[&[u8]]] = &[&[
-      "vesting".as_bytes(),
-      "receiver".as_bytes(),
-      receiver_key.as_ref(),
-      policy_key.as_ref(),
-      cuid.as_bytes(),
-      &[ctx.accounts.vesting_receiver_pda.bump],
-    ]];
     
     let vault_signer_seeds: &[&[&[u8]]] = &[&[
       "vesting".as_bytes(),
@@ -139,7 +128,6 @@ impl<'info> ClaimVestingTranche<'info> {
       None => {
         
         let vault_lamports = ctx.accounts.vesting_vault.lamports();
-        let pda_lamports = ctx.accounts.vesting_receiver_pda.get_lamports();
         
         transfer(
           CpiContext::new_with_signer(

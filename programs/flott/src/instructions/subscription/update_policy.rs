@@ -1,9 +1,5 @@
 use anchor_lang::{
-  prelude::*,
-  system_program::{
-    Transfer,
-    transfer
-  }
+  prelude::*
 };
 
 use crate::state::*;
@@ -70,14 +66,6 @@ impl<'info> UpdateSubscriptionPolicy<'info> {
     require!(amount > 0, ErrorCode::InvalidAmount);
     
     let api_user_key = ctx.accounts.api_user.key();
-    
-    let vault_seeds: &[&[u8]] = &[
-      b"api",
-      b"user",
-      b"vault",
-      api_user_key.as_ref(),
-      &[ctx.accounts.api_user.vault_bump],
-    ];
     
     ctx.accounts.subscription_policy.amount = amount;
     ctx.accounts.subscription_policy.is_active = is_active;

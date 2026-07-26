@@ -142,7 +142,7 @@ impl <'info > PayForSubscription<'info> {
         None => {}
         Some(cycles) => {
           if cycles <= ctx.accounts.subscriber_pda.cycle_count {
-            ctx.accounts.close_account(&cuid)?;
+            ctx.accounts.close_account()?;
             emit_cpi!(SubscriptionCancelled {
               account: sub_pda_key,
               reason: CancellationReason::MaxCyclesReached
@@ -157,7 +157,7 @@ impl <'info > PayForSubscription<'info> {
         None => {}
         Some(_timestamp) => {
           if ctx.accounts.subscriber_pda.payment_retry_count == 0 {
-            ctx.accounts.close_account(&cuid)?;
+            ctx.accounts.close_account()?;
             emit_cpi!(SubscriptionCancelled {
               account: sub_pda_key,
               reason: CancellationReason::PaymentFailed
@@ -254,11 +254,10 @@ impl <'info > PayForSubscription<'info> {
     Ok(())
   }
   
-  pub fn close_account(&self, cuid: &str) -> Result<()> {
+  pub fn close_account(&self) -> Result<()> {
     let vault_balance = self.subscriber_vault.lamports();
     
     let sub_pda_key = self.subscriber_pda.key();
-    let sub_key = self.subscriber.key();
     let api_user_key = self.api_user.key();
     let vault_signer_seeds = &[
       b"subscriber".as_ref(),
@@ -266,14 +265,6 @@ impl <'info > PayForSubscription<'info> {
       sub_pda_key.as_ref(),
       api_user_key.as_ref(),
       &[self.subscriber_pda.vault_bump],
-    ];
-    
-    let pda_signer_seeds = &[
-      b"subscriber".as_ref(),
-      api_user_key.as_ref(),
-      sub_key.as_ref(),
-      cuid.as_bytes(),
-      &[self.subscriber_pda.bump],
     ];
     
     transfer(

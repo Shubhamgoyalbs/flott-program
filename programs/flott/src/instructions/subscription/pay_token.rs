@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{
   token::Mint,
   token_interface::{
@@ -187,7 +186,7 @@ impl<'info> PayForSubscriptionToken<'info> {
         None => {}
         Some(cycles) => {
           if cycles <= ctx.accounts.subscriber_pda.cycle_count {
-            ctx.accounts.close_token_account(&cuid)?;
+            ctx.accounts.close_token_account()?;
             emit_cpi!(SubscriptionCancelled {
               account: sub_pda_key,
               reason: CancellationReason::MaxCyclesReached,
@@ -201,7 +200,7 @@ impl<'info> PayForSubscriptionToken<'info> {
         None => {}
         Some(_) => {
           if ctx.accounts.subscriber_pda.payment_retry_count == 0 {
-            ctx.accounts.close_token_account(&cuid)?;
+            ctx.accounts.close_token_account()?;
             emit_cpi!(SubscriptionCancelled {
               account: sub_pda_key,
               reason: CancellationReason::PaymentFailed,
@@ -310,7 +309,7 @@ impl<'info> PayForSubscriptionToken<'info> {
     Ok(())
   }
   
-  pub fn close_token_account(&self, cuid: &str) -> Result<()> {
+  pub fn close_token_account(&self) -> Result<()> {
     let sub_pda_key = self.subscriber_pda.key();
     let api_user_key = self.api_user.key();
     

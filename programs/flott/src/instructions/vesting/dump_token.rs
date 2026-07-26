@@ -1,7 +1,6 @@
 use anchor_lang::{
   prelude::*,
 };
-use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{
   associated_token::AssociatedToken,
   token_interface::{
@@ -112,7 +111,6 @@ pub struct DumpToken<'info> {
 impl<'info> DumpToken<'info> {
   pub fn handler(
     ctx: Context<DumpToken>,
-    is_cancelable: Option<i64>,
   ) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     

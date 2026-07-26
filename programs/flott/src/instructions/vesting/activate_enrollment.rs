@@ -1,9 +1,5 @@
 use anchor_lang::{
-  prelude::*,
-  system_program::{
-    transfer,
-    Transfer
-  }
+  prelude::*
 };
 use crate::state::*;
 use crate::error::ErrorCode;

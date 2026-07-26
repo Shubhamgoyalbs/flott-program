@@ -113,7 +113,6 @@ pub struct CancelEnrollmentToken<'info> {
 impl<'info> CancelEnrollmentToken<'info> {
   pub fn handler(
     ctx: Context<CancelEnrollmentToken>,
-    is_cancelable: Option<i64>,
   ) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     

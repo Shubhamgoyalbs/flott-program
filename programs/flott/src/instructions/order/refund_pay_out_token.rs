@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{
   token::Mint,
   token_interface::{
@@ -7,13 +6,11 @@ use anchor_spl::{
     transfer_checked, TransferChecked,
     close_account, CloseAccount,
   },
-  token_interface
 };
 use crate::state::*;
 use crate::error::ErrorCode;
 use crate::event::*;
 use crate::constants::*;
-use crate::RefundPayout;
 
 #[event_cpi]
 #[derive(Accounts)]
