@@ -81,6 +81,7 @@ pub struct EnrollInVestingPolicy<'info> {
 impl<'info> EnrollInVestingPolicy<'info> {
   pub fn handler(
     ctx: Context<EnrollInVestingPolicy>,
+    cuid: String,
     is_cancelable: Option<i64>,
   ) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
@@ -112,6 +113,7 @@ impl<'info> EnrollInVestingPolicy<'info> {
     ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_vault;
     ctx.accounts.vesting_receiver_pda.receiver = ctx.accounts.vesting_receiver.key();
     ctx.accounts.vesting_receiver_pda.is_cancelable = is_cancelable;
+    ctx.accounts.vesting_receiver_pda.cuid = cuid;
     ctx.accounts.vesting_receiver_pda.started_at = if is_starting { Some(clock.unix_timestamp) } else { None } ;
     ctx.accounts.vesting_receiver_pda.trache_to_claim = 0;
     ctx.accounts.vesting_receiver_pda.bump = ctx.bumps.vesting_receiver_pda;

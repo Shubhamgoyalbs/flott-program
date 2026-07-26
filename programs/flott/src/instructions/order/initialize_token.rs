@@ -174,6 +174,7 @@ impl<'info> InitializeOrderToken<'info> {
     ctx.accounts.order.total_amount = params.total_amount;
     ctx.accounts.order.token = token;
     ctx.accounts.order.api_user = ctx.accounts.api_user.key();
+    ctx.accounts.order.cuid = params.cuid;
     ctx.accounts.order.payer = params.payer;
     ctx.accounts.order.created_at = clock.unix_timestamp;
     ctx.accounts.order.bump = ctx.bumps.order;

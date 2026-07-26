@@ -99,12 +99,12 @@ pub mod flott {
     UpdateSubscriptionPolicy::handler(is_active, amount, trial_intervals, ctx)
   }
   
-  pub fn initialize_subscriber(ctx: Context<InitializeSubscriber>, _cuid: String, _policy_cuid: String) -> Result<()> {
-    InitializeSubscriber::handler(ctx)
+  pub fn initialize_subscriber(ctx: Context<InitializeSubscriber>, cuid: String, _policy_cuid: String) -> Result<()> {
+    InitializeSubscriber::handler(ctx, cuid)
   }
   
-  pub fn initialize_subscriber_token(ctx: Context<InitializeSubscriberToken>, _cuid: String, _policy_cuid: String) -> Result<()> {
-    InitializeSubscriberToken::handler(ctx)
+  pub fn initialize_subscriber_token(ctx: Context<InitializeSubscriberToken>, cuid: String, _policy_cuid: String) -> Result<()> {
+    InitializeSubscriberToken::handler(ctx, cuid)
   }
   
   pub fn activate_subscription(ctx: Context<ActivateSubscription>, _cuid: String, _policy_cuid: String, amount: u64) -> Result<()> {
@@ -153,16 +153,16 @@ pub mod flott {
     CancelVestingPolicy::handler(ctx)
   }
   
-  pub fn enroll_vesting_policy(ctx: Context<EnrollInVestingPolicy>, _cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
-    EnrollInVestingPolicy::handler(ctx, is_cancelable)
+  pub fn enroll_vesting_policy(ctx: Context<EnrollInVestingPolicy>, cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
+    EnrollInVestingPolicy::handler(ctx, cuid, is_cancelable)
   }
   
   pub fn cancel_vesting_enrollment(ctx: Context<CancelVestingEnrollment>, _cuid: String, _policy_cuid: String) -> Result<()> {
     CancelVestingEnrollment::handler(ctx)
   }
   
-  pub fn enroll_token(ctx: Context<EnrollToken>, _cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
-    EnrollToken::handler(ctx, is_cancelable)
+  pub fn enroll_token(ctx: Context<EnrollToken>, cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
+    EnrollToken::handler(ctx, cuid, is_cancelable)
   }
   
   pub fn dump_enrollment(ctx: Context<DumpEnrollment>, _cuid: String, _policy_cuid: String) -> Result<()> {

@@ -98,6 +98,9 @@ pub struct Order {
   /// Does NOT include the platform fee or `ApiUser` fee.
   pub total_amount: u64,
   
+  #[max_len(25)]
+  pub cuid: String,
+  
   /// The SPL token mint used for payment.
   /// Use `So11111111111111111111111111111111111111112` for native SOL.
   pub token: Pubkey,
@@ -236,6 +239,9 @@ pub struct VestingPolicy {
   /// The wallet that created and funded this vesting policy.
   pub maker: Pubkey,
   
+  #[max_len(25)]
+  pub cuid: String,
+  
   /// The `ApiUser` account this vesting policy belongs to.
   pub api_user: Pubkey,
   
@@ -299,6 +305,9 @@ pub struct VestingReceiver {
   /// The `VestingPolicy` this receiver belongs to.
   pub vesting_policy: Pubkey,
   
+  #[max_len(25)]
+  pub cuid: String,
+  
   /// The escrow vault that holds this receiver's vested funds
   /// until each tranche is claimed.
   pub vault: Pubkey,
@@ -361,6 +370,9 @@ pub struct SubscriptionPolicy {
   /// PDA bump seed for this `SubscriptionPolicy` account.
   pub bump: u8,
   
+  #[max_len(25)]
+  pub cuid: String,
+  
   /// The authority that can mutate or close this policy (typically the merchant).
   pub authority: Pubkey,
   
@@ -421,6 +433,9 @@ pub struct SubscriptionPolicy {
 pub struct Subscriber {
   /// The `SubscriptionPolicy` this subscriber is enrolled in.
   pub policy: Pubkey,
+  
+  #[max_len(25)]
+  pub cuid: String,
   
   /// The subscriber's wallet address.
   pub subscriber: Pubkey,
@@ -490,6 +505,8 @@ pub struct InitializeSubscriptionPolicyParams {
   
   pub amount: u64,
   
+  pub cuid: String,
+  
   pub billing_interval: BillingInterval,
   
   pub trial_intervals: u8,
@@ -515,6 +532,8 @@ pub struct CreateVestingPolicyParams {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct InitializeOrderParams {
   pub metadata: [u8; 32],
+  
+  pub cuid: String,
   
   pub total_amount: u64,
   

@@ -72,7 +72,7 @@ pub struct InitializeSubscriber<'info> {
 
 impl<'info> InitializeSubscriber<'info> {
   pub fn handler(
-    ctx: Context<InitializeSubscriber>
+    ctx: Context<InitializeSubscriber>, cuid: String,
   ) ->  Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
@@ -91,6 +91,7 @@ impl<'info> InitializeSubscriber<'info> {
       ctx.accounts.subscriber_pda.vault_bump = ctx.bumps.subscriber_vault;
       ctx.accounts.subscriber_pda.trial_interval_left = ctx.accounts.subscription_policy.trial_intervals;
       ctx.accounts.subscriber_pda.initiated_at = None;
+      ctx.accounts.subscriber_pda.cuid = cuid;
       ctx.accounts.subscriber_pda.last_charged_at = None;
       ctx.accounts.subscriber_pda.next_charge_at = None;
       ctx.accounts.subscriber_pda.payment_retry_count = 0;

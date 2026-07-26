@@ -86,7 +86,7 @@ pub struct InitializeSubscriberToken<'info> {
 }
 
 impl<'info> InitializeSubscriberToken<'info> {
-  pub fn handler(ctx: Context<InitializeSubscriberToken>) -> Result<()> {
+  pub fn handler(ctx: Context<InitializeSubscriberToken>, cuid: String) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(ctx.accounts.subscription_policy.is_active, ErrorCode::PolicyInactive);
@@ -104,6 +104,7 @@ impl<'info> InitializeSubscriberToken<'info> {
     ctx.accounts.subscriber_pda.vault_bump = ctx.bumps.subscriber_vault;
     ctx.accounts.subscriber_pda.trial_interval_left = ctx.accounts.subscription_policy.trial_intervals;
     ctx.accounts.subscriber_pda.initiated_at = None;
+    ctx.accounts.subscriber_pda.cuid = cuid;
     ctx.accounts.subscriber_pda.last_charged_at = None;
     ctx.accounts.subscriber_pda.next_charge_at = None;
     ctx.accounts.subscriber_pda.payment_retry_count = 0;

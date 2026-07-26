@@ -85,6 +85,7 @@ impl<'info> InitializeSubscriptionPolicy<'info> {
     ctx.accounts.subscription_policy.mint = params.mint;
     ctx.accounts.subscription_policy.amount = params.amount;
     ctx.accounts.subscription_policy.billing_interval = params.billing_interval;
+    ctx.accounts.subscription_policy.cuid = params.cuid;
     ctx.accounts.subscription_policy.trial_intervals = params.trial_intervals;
     ctx.accounts.subscription_policy.max_cycles = params.max_cycles;
     ctx.accounts.subscription_policy.max_retries = params.max_retries;
