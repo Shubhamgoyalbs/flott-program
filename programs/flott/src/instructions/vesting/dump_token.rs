@@ -47,7 +47,7 @@ pub struct DumpToken<'info> {
     address = vesting_policy.token @ ErrorCode::InvalidTokenMint,
     mint::token_program = token_program,
   )]
-  pub mint: InterfaceAccount<'info, Mint>,
+  pub mint: Box<InterfaceAccount<'info, Mint>>,
   
   #[account(
     mut,
