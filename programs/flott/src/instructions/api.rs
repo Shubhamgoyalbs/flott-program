@@ -1,4 +1,4 @@
-pub mod initialize;
+pub mod initialize_api;
 pub mod activate;
 pub mod deactivate;
 pub mod authorize;
@@ -8,7 +8,7 @@ pub mod withdraw_token;
 pub mod close;
 pub mod authority_refill;
 
-pub use initialize::*;
+pub use initialize_api::*;
 pub use activate::*;
 pub use deactivate::*;
 pub use authorize::*;

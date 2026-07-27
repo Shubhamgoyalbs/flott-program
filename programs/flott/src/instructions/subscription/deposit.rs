@@ -43,7 +43,7 @@ pub struct DepositToSubscriptionVault<'info> {
     ],
     bump = subscription_policy.bump,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -56,7 +56,7 @@ pub struct DepositToSubscriptionVault<'info> {
     bump = subscriber_pda.bump,
     has_one = subscriber @ ErrorCode::SubscriberMismatch
   )]
-  pub subscriber_pda: Account<'info, Subscriber>,
+  pub subscriber_pda: Box<Account<'info, Subscriber>>,
   
   #[account(
     mut,
@@ -68,7 +68,7 @@ pub struct DepositToSubscriptionVault<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }

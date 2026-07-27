@@ -33,7 +33,7 @@ pub struct EnrollInVestingPolicy<'info> {
     ],
     bump = vesting_policy.bump,
   )]
-  pub vesting_policy: Account<'info, VestingPolicy>,
+  pub vesting_policy: Box<Account<'info, VestingPolicy>>,
   
   pub vesting_receiver: SystemAccount<'info>,
   
@@ -50,7 +50,7 @@ pub struct EnrollInVestingPolicy<'info> {
     ],
     bump,
   )]
-  pub vesting_receiver_pda: Account<'info, VestingReceiver>,
+  pub vesting_receiver_pda: Box<Account<'info, VestingReceiver>>,
   
   #[account(
     mut,
@@ -73,7 +73,7 @@ pub struct EnrollInVestingPolicy<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }

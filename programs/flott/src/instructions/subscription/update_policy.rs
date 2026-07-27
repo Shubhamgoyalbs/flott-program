@@ -37,7 +37,7 @@ pub struct UpdateSubscriptionPolicy<'info> {
     ],
     bump = subscription_policy.bump,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -49,7 +49,7 @@ pub struct UpdateSubscriptionPolicy<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }
@@ -64,8 +64,6 @@ impl<'info> UpdateSubscriptionPolicy<'info> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(amount > 0, ErrorCode::InvalidAmount);
-    
-    let api_user_key = ctx.accounts.api_user.key();
     
     ctx.accounts.subscription_policy.amount = amount;
     ctx.accounts.subscription_policy.is_active = is_active;

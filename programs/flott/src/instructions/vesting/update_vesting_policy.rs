@@ -26,10 +26,9 @@ pub struct UpdateVestingPolicy<'info> {
     ],
     bump = vesting_policy.bump,
   )]
-  pub vesting_policy: Account<'info, VestingPolicy>,
+  pub vesting_policy: Box<Account<'info, VestingPolicy>>,
   
   #[account(
-    mut,
     seeds = [
       "api".as_ref(),
       "user".as_ref(),
@@ -38,7 +37,7 @@ pub struct UpdateVestingPolicy<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }

@@ -132,11 +132,11 @@ pub mod flott {
   }
   
   pub fn pay_subscription(ctx: Context<PayForSubscription>, _cuid: String, _policy_cuid: String) -> Result<()> {
-    PayForSubscription::handler(ctx, _cuid)
+    PayForSubscription::handler(ctx)
   }
   
   pub fn pay_subscription_token(ctx: Context<PayForSubscriptionToken>, _cuid: String, _policy_cuid: String) -> Result<()> {
-    PayForSubscriptionToken::handler(ctx, _cuid)
+    PayForSubscriptionToken::handler(ctx)
   }
   
   /// Vesting Instructions
@@ -177,15 +177,15 @@ pub mod flott {
     ClaimToken::handler(ctx, _cuid)
   }
   
-  pub fn cancel_enrollment_token(ctx: Context<CancelEnrollmentToken>, _cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
-    CancelEnrollmentToken::handler(ctx, is_cancelable)
+  pub fn cancel_enrollment_token(ctx: Context<CancelEnrollmentToken>, _cuid: String, _policy_cuid: String) -> Result<()> {
+    CancelEnrollmentToken::handler(ctx)
   }
   
   pub fn claim_vesting_tranche(ctx: Context<ClaimVestingTranche>, _cuid: String, _policy_cuid: String) -> Result<()> {
-    ClaimVestingTranche::handler(ctx, _cuid)
+    ClaimVestingTranche::handler(ctx)
   }
   
-  pub fn dump_token(ctx: Context<DumpToken>, _cuid: String, _policy_cuid: String, is_cancelable: Option<i64>) -> Result<()> {
-    DumpToken::handler(ctx, is_cancelable)
+  pub fn dump_token(ctx: Context<DumpToken>, _cuid: String, _policy_cuid: String) -> Result<()> {
+    DumpToken::handler(ctx)
   }
 }

@@ -28,7 +28,7 @@ pub struct CancelToken<'info> {
   #[account(
     constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
   )]
-  pub mint: Account<'info, Mint>,
+  pub mint: Box<Account<'info, Mint>>,
   
   #[account(
     mut,
@@ -36,7 +36,7 @@ pub struct CancelToken<'info> {
     token::authority = subscriber,
     token::token_program = token_program,
   )]
-  pub subscriber_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -51,7 +51,7 @@ pub struct CancelToken<'info> {
     token::authority = subscriber_vault,
     token::token_program = token_program,
   )]
-  pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -62,7 +62,7 @@ pub struct CancelToken<'info> {
     ],
     bump = subscription_policy.bump,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -87,7 +87,7 @@ pub struct CancelToken<'info> {
     bump = subscriber_pda.bump,
     has_one = subscriber @ ErrorCode::SubscriberMismatch,
   )]
-  pub subscriber_pda: Account<'info, Subscriber>,
+  pub subscriber_pda: Box<Account<'info, Subscriber>>,
   
   #[account(
     mut,
@@ -99,7 +99,7 @@ pub struct CancelToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   pub system_program: Program<'info, System>,

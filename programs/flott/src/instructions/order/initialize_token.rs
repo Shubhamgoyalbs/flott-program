@@ -38,7 +38,7 @@ pub struct InitializeOrderToken<'info> {
     ],
     bump,
   )]
-  pub order: Account<'info, Order>,
+  pub order: Box< Account<'info, Order>>,
   
   #[account(
     init,
@@ -50,7 +50,7 @@ pub struct InitializeOrderToken<'info> {
     ],
     bump,
   )]
-  pub refund: Account<'info, Refund>,
+  pub refund: Box< Account<'info, Refund>>,
   
   #[account(
     init,
@@ -62,7 +62,7 @@ pub struct InitializeOrderToken<'info> {
     ],
     bump,
   )]
-  pub expiry: Account<'info, Expiry>,
+  pub expiry: Box< Account<'info, Expiry>>,
   
   #[account(
     init,
@@ -74,12 +74,12 @@ pub struct InitializeOrderToken<'info> {
     ],
     bump,
   )]
-  pub split: Account<'info, Split>,
+  pub split: Box< Account<'info, Split>>,
   
   #[account(
     constraint = mint.key() == token @ ErrorCode::InvalidTokenMint,
   )]
-  pub mint: Account<'info, Mint>,
+  pub mint: Box< Account<'info, Mint>>,
   
   #[account(
     init,
@@ -94,7 +94,7 @@ pub struct InitializeOrderToken<'info> {
     token::authority = refund_vault,
     token::token_program = token_program,
   )]
-  pub refund_vault: InterfaceAccount<'info, TokenAccount>,
+  pub refund_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -106,7 +106,7 @@ pub struct InitializeOrderToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box< Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   

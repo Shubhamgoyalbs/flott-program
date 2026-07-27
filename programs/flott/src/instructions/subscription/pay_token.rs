@@ -29,7 +29,7 @@ pub struct PayForSubscriptionToken<'info> {
     constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
     constraint = mint.key() != NATIVE_SOL_MINT @ ErrorCode::InvalidTokenMint,
   )]
-  pub mint: Account<'info, Mint>,
+  pub mint: Box<Account<'info, Mint>>,
   
   #[account(
     mut,
@@ -44,7 +44,7 @@ pub struct PayForSubscriptionToken<'info> {
     token::authority = subscriber_vault,
     token::token_program = token_program,
   )]
-  pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -63,7 +63,7 @@ pub struct PayForSubscriptionToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub recipient_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub recipient_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -76,7 +76,7 @@ pub struct PayForSubscriptionToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -84,14 +84,14 @@ pub struct PayForSubscriptionToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub server_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub server_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub subscriber_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -103,7 +103,7 @@ pub struct PayForSubscriptionToken<'info> {
     bump = subscription_policy.bump,
     has_one = recipient @ ErrorCode::InvalidRecipient,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -116,7 +116,7 @@ pub struct PayForSubscriptionToken<'info> {
     bump = subscriber_pda.bump,
     has_one = subscriber @ ErrorCode::SubscriberMismatch,
   )]
-  pub subscriber_pda: Account<'info, Subscriber>,
+  pub subscriber_pda: Box<Account<'info, Subscriber>>,
   
   #[account(
     mut,
@@ -128,7 +128,7 @@ pub struct PayForSubscriptionToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   #[account(
     constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
@@ -144,7 +144,6 @@ pub struct PayForSubscriptionToken<'info> {
 impl<'info> PayForSubscriptionToken<'info> {
   pub fn handler(
     ctx: Context<PayForSubscriptionToken>,
-    cuid: String,
   ) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     

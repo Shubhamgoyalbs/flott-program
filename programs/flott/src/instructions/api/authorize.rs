@@ -46,7 +46,7 @@ pub struct AuthorizeApiUser<'info> {
     ],
     bump = api_user.bump,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>
 }

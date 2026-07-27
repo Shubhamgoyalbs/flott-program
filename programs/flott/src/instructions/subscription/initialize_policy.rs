@@ -41,7 +41,7 @@ pub struct InitializeSubscriptionPolicy<'info> {
     ],
     bump,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -53,7 +53,7 @@ pub struct InitializeSubscriptionPolicy<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }

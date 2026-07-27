@@ -39,7 +39,7 @@ pub struct EnrollToken<'info> {
     ],
     bump = vesting_policy.bump,
   )]
-  pub vesting_policy: Account<'info, VestingPolicy>,
+  pub vesting_policy: Box<Account<'info, VestingPolicy>>,
   
   #[account(
     address = vesting_policy.token @ ErrorCode::InvalidTokenMint,
@@ -54,7 +54,7 @@ pub struct EnrollToken<'info> {
     associated_token::token_program = token_program,
     constraint = maker_ata.amount >= vesting_policy.total_amount @ ErrorCode::InsufficientAmount,
   )]
-  pub maker_ata: InterfaceAccount<'info, TokenAccount>,
+  pub maker_ata: Box<InterfaceAccount<'info, TokenAccount>>,
   
   pub vesting_receiver: SystemAccount<'info>,
   
@@ -71,7 +71,7 @@ pub struct EnrollToken<'info> {
     ],
     bump,
   )]
-  pub vesting_receiver_pda: Account<'info, VestingReceiver>,
+  pub vesting_receiver_pda: Box<Account<'info, VestingReceiver>>,
   
   #[account(
     init,
@@ -86,7 +86,7 @@ pub struct EnrollToken<'info> {
     token::authority = vesting_vault,
     token::token_program = token_program,
   )]
-  pub vesting_vault: InterfaceAccount<'info, TokenAccount>,
+  pub vesting_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -98,7 +98,7 @@ pub struct EnrollToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   

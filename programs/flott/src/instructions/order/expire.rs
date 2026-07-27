@@ -30,7 +30,7 @@ pub struct ExpireOrder<'info> {
     ],
     bump = order.bump,
   )]
-  pub order: Account<'info, Order>,
+  pub order: Box< Account<'info, Order>>,
   
   #[account(
     mut,
@@ -41,7 +41,7 @@ pub struct ExpireOrder<'info> {
     ],
     bump = refund.bump,
   )]
-  pub refund: Account<'info, Refund>,
+  pub refund: Box< Account<'info, Refund>>,
   
   #[account(
     mut,
@@ -52,7 +52,7 @@ pub struct ExpireOrder<'info> {
     ],
     bump = expiry.bump,
   )]
-  pub expiry: Account<'info, Expiry>,
+  pub expiry: Box< Account<'info, Expiry>>,
   
   #[account(
     mut,
@@ -63,7 +63,7 @@ pub struct ExpireOrder<'info> {
     ],
     bump = split.bump,
   )]
-  pub split: Account<'info, Split>,
+  pub split: Box< Account<'info, Split>>,
   
   #[account(
     mut,
@@ -91,7 +91,7 @@ pub struct ExpireOrder<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box< Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }

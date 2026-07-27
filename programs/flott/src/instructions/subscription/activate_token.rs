@@ -25,7 +25,7 @@ pub struct ActivateSubscriptionToken<'info> {
     token::mint = mint,
     token::authority = recipient,
   )]
-  pub recipient_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub recipient_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   pub recipient: SystemAccount<'info>,
   
@@ -34,7 +34,7 @@ pub struct ActivateSubscriptionToken<'info> {
     token::mint = mint,
     token::authority = subscriber,
   )]
-  pub subscriber_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -48,7 +48,7 @@ pub struct ActivateSubscriptionToken<'info> {
     token::mint = mint,
     token::authority = subscriber_pda,
   )]
-  pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
@@ -65,7 +65,7 @@ pub struct ActivateSubscriptionToken<'info> {
     bump = subscription_policy.bump,
     has_one = recipient @ ErrorCode::InvalidRecipient,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     mut,
@@ -78,7 +78,7 @@ pub struct ActivateSubscriptionToken<'info> {
     bump = subscriber_pda.bump,
     has_one = subscriber @ ErrorCode::SubscriberMismatch,
   )]
-  pub subscriber_pda: Account<'info, Subscriber>,
+  pub subscriber_pda: Box<Account<'info, Subscriber>>,
   
   #[account(
     mut,
@@ -90,7 +90,7 @@ pub struct ActivateSubscriptionToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   pub system_program: Program<'info, System>,

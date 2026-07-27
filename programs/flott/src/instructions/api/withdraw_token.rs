@@ -29,7 +29,7 @@ pub struct WithdrawFromVaultToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub vault_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -38,7 +38,7 @@ pub struct WithdrawFromVaultToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub owner_token_account: InterfaceAccount<'info, TokenAccount>,
+  pub owner_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -49,7 +49,7 @@ pub struct WithdrawFromVaultToken<'info> {
     bump = api_user.bump,
     has_one = owner @ ErrorCode::OwnerMismatch,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   pub system_program: Program<'info, System>,

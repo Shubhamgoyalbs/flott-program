@@ -36,7 +36,7 @@ pub struct InitializeApiUser<'info> {
     space = 8 + ApiUser::INIT_SPACE,
     bump
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>
 }

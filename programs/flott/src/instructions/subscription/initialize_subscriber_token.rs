@@ -26,7 +26,7 @@ pub struct InitializeSubscriberToken<'info> {
     constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
     constraint = mint.key() != NATIVE_SOL_MINT @ ErrorCode::InvalidTokenMint,
   )]
-  pub mint: Account<'info, Mint>,
+  pub mint: Box<Account<'info, Mint>>,
   
   #[account(
     init,
@@ -42,7 +42,7 @@ pub struct InitializeSubscriberToken<'info> {
     ],
     bump,
   )]
-  pub subscriber_vault: InterfaceAccount<'info, TokenAccount>,
+  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -53,7 +53,7 @@ pub struct InitializeSubscriberToken<'info> {
     ],
     bump = subscription_policy.bump,
   )]
-  pub subscription_policy: Account<'info, SubscriptionPolicy>,
+  pub subscription_policy: Box<Account<'info, SubscriptionPolicy>>,
   
   #[account(
     init,
@@ -67,7 +67,7 @@ pub struct InitializeSubscriberToken<'info> {
     ],
     bump,
   )]
-  pub subscriber_pda: Account<'info, Subscriber>,
+  pub subscriber_pda: Box<Account<'info, Subscriber>>,
   
   #[account(
     mut,
@@ -79,7 +79,7 @@ pub struct InitializeSubscriberToken<'info> {
     bump = api_user.bump,
     constraint = api_user.is_active @ ErrorCode::ApiUserInactive,
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub token_program: Interface<'info, TokenInterface>,
   pub system_program: Program<'info, System>,

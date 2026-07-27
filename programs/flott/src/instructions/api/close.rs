@@ -37,7 +37,7 @@ pub struct CloseApiAccount<'info> {
     bump = api_user.bump,
     has_one = owner @ ErrorCode::OwnerMismatch
   )]
-  pub api_user: Account<'info, ApiUser>,
+  pub api_user: Box<Account<'info, ApiUser>>,
   
   pub system_program: Program<'info, System>,
 }
