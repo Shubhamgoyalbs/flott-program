@@ -25,12 +25,20 @@ use crate::constants::*;
   policy_cuid: String
 )]
 pub struct DumpToken<'info> {
-  #[account(mut)]
-  pub maker: Signer<'info>,
+  #[account(
+    constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
+  )]
+  pub server: Signer<'info>,
   
   pub authority: SystemAccount<'info>,
   
   pub owner: SystemAccount<'info>,
+  
+  #[account(
+    mut,
+    address = vesting_policy.maker @ ErrorCode::InvalidMaker,
+  )]
+  pub maker: SystemAccount<'info>,
   
   #[account(
     seeds = [

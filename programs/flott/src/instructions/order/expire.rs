@@ -15,7 +15,7 @@ pub struct ExpireOrder<'info> {
   #[account(
     constraint = server.key() == SERVER_AUTHORIZED_KEY @ ErrorCode::InvalidAuthorizeRequest
   )]
-  pub server: SystemAccount<'info>,
+  pub server: Signer<'info>,
   
   pub authority: SystemAccount<'info>,
   
