@@ -7,7 +7,9 @@ use anchor_lang::{
 };
 use crate::state::*;
 use crate::constants::*;
+use crate::event::*;
 
+#[event_cpi]
 #[derive(Accounts)]
 pub struct InitializeApiUser<'info> {
   #[account(mut)]
@@ -62,6 +64,11 @@ impl <'info> InitializeApiUser<'info> {
     ctx.accounts.api_user.fee_percentage = fee_percentage;
     ctx.accounts.api_user.is_active = false;
     ctx.accounts.api_user.created_at = Clock::get()?.unix_timestamp;
+    
+    emit_cpi!(ApiUserAccountGotInitialized {
+      account: ctx.accounts.api_user.key()
+    });
+    
     Ok(())
   }
 }

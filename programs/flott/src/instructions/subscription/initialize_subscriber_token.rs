@@ -6,9 +6,11 @@ use anchor_spl::{
   token_interface::{TokenInterface, TokenAccount},
 };
 use crate::state::*;
+use crate::event::*;
 use crate::error::ErrorCode;
-use crate::NATIVE_SOL_MINT;
+use crate::constants::NATIVE_SOL_MINT;
 
+#[event_cpi]
 #[derive(Accounts)]
 #[instruction(
   cuid: String,
@@ -113,6 +115,10 @@ impl<'info> InitializeSubscriberToken<'info> {
     ctx.accounts.subscriber_pda.bump = ctx.bumps.subscriber_pda;
     ctx.accounts.subscriber_pda.created_at = clock.unix_timestamp;
     ctx.accounts.subscriber_pda._reserved = [0u8; 16];
+    
+    emit_cpi!(SubscriberInitialized {
+      account: ctx.accounts.subscriber_pda.key()
+    });
     
     Ok(())
   }

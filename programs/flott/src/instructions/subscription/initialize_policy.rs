@@ -8,7 +8,6 @@ use crate::event::*;
 #[event_cpi]
 #[derive(Accounts)]
 #[instruction(
-  cuid: String,
   policy_cuid: String
 )]
 pub struct InitializeSubscriptionPolicy<'info> {

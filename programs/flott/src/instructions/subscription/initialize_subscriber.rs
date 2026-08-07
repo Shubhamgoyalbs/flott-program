@@ -3,8 +3,10 @@ use anchor_lang::{
 };
 use crate::state::*;
 use crate::error::ErrorCode;
-use crate::NATIVE_SOL_MINT;
+use crate::constants::NATIVE_SOL_MINT;
+use crate::event::*;
 
+#[event_cpi]
 #[derive(Accounts)]
 #[instruction(
   cuid: String,
@@ -85,22 +87,26 @@ impl<'info> InitializeSubscriber<'info> {
     
     let clock = Clock::get()?;
     
-      ctx.accounts.subscriber_pda.policy = ctx.accounts.subscription_policy.key();
-      ctx.accounts.subscriber_pda.subscriber = ctx.accounts.subscriber.key();
-      ctx.accounts.subscriber_pda.vault = ctx.accounts.subscriber_vault.key();
-      ctx.accounts.subscriber_pda.vault_bump = ctx.bumps.subscriber_vault;
-      ctx.accounts.subscriber_pda.trial_interval_left = ctx.accounts.subscription_policy.trial_intervals;
-      ctx.accounts.subscriber_pda.initiated_at = None;
-      ctx.accounts.subscriber_pda.cuid = cuid;
-      ctx.accounts.subscriber_pda.last_charged_at = None;
-      ctx.accounts.subscriber_pda.next_charge_at = None;
-      ctx.accounts.subscriber_pda.payment_retry_count = 0;
-      ctx.accounts.subscriber_pda.last_retry_at = None;
-      ctx.accounts.subscriber_pda.cycle_count = 0;
-      ctx.accounts.subscriber_pda.bump  = ctx.bumps.subscriber_pda;
-      ctx.accounts.subscriber_pda.created_at = clock.unix_timestamp;
-      ctx.accounts.subscriber_pda._reserved  = [0u8; 16];
+    ctx.accounts.subscriber_pda.policy = ctx.accounts.subscription_policy.key();
+    ctx.accounts.subscriber_pda.subscriber = ctx.accounts.subscriber.key();
+    ctx.accounts.subscriber_pda.vault = ctx.accounts.subscriber_vault.key();
+    ctx.accounts.subscriber_pda.vault_bump = ctx.bumps.subscriber_vault;
+    ctx.accounts.subscriber_pda.trial_interval_left = ctx.accounts.subscription_policy.trial_intervals;
+    ctx.accounts.subscriber_pda.initiated_at = None;
+    ctx.accounts.subscriber_pda.cuid = cuid;
+    ctx.accounts.subscriber_pda.last_charged_at = None;
+    ctx.accounts.subscriber_pda.next_charge_at = None;
+    ctx.accounts.subscriber_pda.payment_retry_count = 0;
+    ctx.accounts.subscriber_pda.last_retry_at = None;
+    ctx.accounts.subscriber_pda.cycle_count = 0;
+    ctx.accounts.subscriber_pda.bump  = ctx.bumps.subscriber_pda;
+    ctx.accounts.subscriber_pda.created_at = clock.unix_timestamp;
+    ctx.accounts.subscriber_pda._reserved  = [0u8; 16];
 
+    emit_cpi!(SubscriberInitialized {
+      account: ctx.accounts.subscriber_pda.key()
+    });
+    
     Ok(())
   }
 }

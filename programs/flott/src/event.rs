@@ -135,9 +135,17 @@ pub struct OrderCompleted {
   pub account: Pubkey,
 }
 
+#[event]
+pub struct SubscriberInitialized {
+  pub account: Pubkey,
+}
 
 #[event]
 pub struct OrderExpired {
   pub account: Pubkey,
 }
 
+#[event]
+pub struct ApiUserAccountGotInitialized {
+  pub account: Pubkey,
+}
