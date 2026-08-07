@@ -21,7 +21,7 @@ pub struct ExpireOrder<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "order".as_ref(),
       maker.key().as_ref(),
@@ -34,7 +34,7 @@ pub struct ExpireOrder<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "refund".as_ref(),
       order.key().as_ref(),
@@ -45,7 +45,7 @@ pub struct ExpireOrder<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "expiry".as_ref(),
       order.key().as_ref(),
@@ -56,7 +56,7 @@ pub struct ExpireOrder<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "split".as_ref(),
       order.key().as_ref(),
@@ -75,7 +75,7 @@ pub struct ExpireOrder<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
 
   #[account(mut)]
   pub maker: SystemAccount<'info>,

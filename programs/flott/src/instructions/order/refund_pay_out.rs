@@ -20,7 +20,7 @@ pub struct RefundPayout<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "order".as_ref(),
       maker.key().as_ref(),
@@ -34,7 +34,7 @@ pub struct RefundPayout<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "refund".as_ref(),
       order.key().as_ref(),
@@ -45,7 +45,7 @@ pub struct RefundPayout<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "expiry".as_ref(),
       order.key().as_ref(),
@@ -56,7 +56,7 @@ pub struct RefundPayout<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "split".as_ref(),
       order.key().as_ref(),
@@ -75,7 +75,7 @@ pub struct RefundPayout<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -208,7 +208,7 @@ impl<'info> RefundPayout<'info> {
         ctx.accounts.system_program.key(),
         Transfer {
           from: ctx.accounts.refund_vault.to_account_info(),
-          to: ctx.accounts.vault.to_account_info(),
+          to: ctx.accounts.api_user_vault.to_account_info(),
         },
         signer_seeds,
       ),

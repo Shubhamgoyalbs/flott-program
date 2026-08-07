@@ -83,10 +83,10 @@ pub struct EnrollToken<'info> {
     ],
     bump,
     token::mint = mint,
-    token::authority = vesting_vault,
+    token::authority = vesting_receiver_token_vault,
     token::token_program = token_program,
   )]
-  pub vesting_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub vesting_receiver_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -140,8 +140,8 @@ impl<'info> EnrollToken<'info> {
     }
     
     ctx.accounts.vesting_receiver_pda.vesting_policy = ctx.accounts.vesting_policy.key();
-    ctx.accounts.vesting_receiver_pda.vault = ctx.accounts.vesting_vault.key();
-    ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_vault;
+    ctx.accounts.vesting_receiver_pda.vault = ctx.accounts.vesting_receiver_token_vault.key();
+    ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_receiver_token_vault;
     ctx.accounts.vesting_receiver_pda.receiver = ctx.accounts.vesting_receiver.key();
     ctx.accounts.vesting_receiver_pda.is_cancelable = is_cancelable;
     ctx.accounts.vesting_receiver_pda.cuid = cuid;
@@ -158,7 +158,7 @@ impl<'info> EnrollToken<'info> {
         TransferChecked {
           from: ctx.accounts.maker_ata.to_account_info(),
           mint: ctx.accounts.mint.to_account_info(),
-          to: ctx.accounts.vesting_vault.to_account_info(),
+          to: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
           authority: ctx.accounts.maker.to_account_info(),
         },
       ),

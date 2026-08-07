@@ -92,10 +92,10 @@ pub struct DumpToken<'info> {
     ],
     bump,
     token::mint = mint,
-    token::authority = vesting_vault,
+    token::authority = vesting_receiver_token_vault,
     token::token_program = token_program,
   )]
-  pub vesting_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub vesting_receiver_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -136,7 +136,7 @@ impl<'info> DumpToken<'info> {
     let time_gap = clock.unix_timestamp - ctx.accounts.vesting_receiver_pda.created_at;
     require!(time_gap > 172800, ErrorCode::EnrollmentWindowNotExpired);
     
-    let vault_lamports = ctx.accounts.vesting_vault.amount;
+    let vault_lamports = ctx.accounts.vesting_receiver_token_vault.amount;
     
     let receiver_pda_key = ctx.accounts.vesting_receiver_pda.key();
     let vault_bump = ctx.accounts.vesting_receiver_pda.vault_bump;
@@ -153,10 +153,10 @@ impl<'info> DumpToken<'info> {
         CpiContext::new_with_signer(
           ctx.accounts.token_program.key(),
           TransferChecked {
-            from: ctx.accounts.vesting_vault.to_account_info(),
+            from: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
             to: ctx.accounts.maker_ata.to_account_info(),
-            authority: ctx.accounts.vesting_vault.to_account_info(),
+            authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
           },
           signer_seeds
         ),
@@ -169,9 +169,9 @@ impl<'info> DumpToken<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.token_program.key(),
         CloseAccount {
-          account: ctx.accounts.vesting_vault.to_account_info(),
+          account: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
           destination: ctx.accounts.maker.to_account_info(),
-          authority: ctx.accounts.vesting_vault.to_account_info(),
+          authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
         },
         signer_seeds
       ),

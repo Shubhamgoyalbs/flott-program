@@ -23,7 +23,7 @@ pub struct WithdrawFromVault<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     seeds = [
@@ -43,7 +43,7 @@ impl<'info> WithdrawFromVault<'info> {
   pub fn handler(ctx: Context<WithdrawFromVault>, amount: u64) -> Result<()> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
-    let balance_after = ctx.accounts.vault.lamports()
+    let balance_after = ctx.accounts.api_user_vault.lamports()
       .checked_sub(amount)
       .ok_or(ErrorCode::Underflow)?;
     
@@ -67,7 +67,7 @@ impl<'info> WithdrawFromVault<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.system_program.key(),
         Transfer {
-          from:   ctx.accounts.vault.to_account_info(),
+          from:   ctx.accounts.api_user_vault.to_account_info(),
           to: ctx.accounts.owner.to_account_info(),
         },
         &[vault_seeds],

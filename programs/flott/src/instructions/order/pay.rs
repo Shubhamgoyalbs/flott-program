@@ -88,7 +88,7 @@ pub struct PayOrder<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub api_vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   pub maker: SystemAccount<'info>,
   
@@ -154,7 +154,7 @@ impl<'info> PayOrder<'info> {
         ctx.accounts.system_program.key(),
         Transfer {
           from: ctx.accounts.payer.to_account_info(),
-          to: ctx.accounts.api_vault.to_account_info(),
+          to: ctx.accounts.api_user_vault.to_account_info(),
         },
       ),
       api_fee,
@@ -224,7 +224,7 @@ impl<'info> PayOrder<'info> {
         ErrorCode::IncompleteSplitDistribution
       );
       
-      let rent_destination = ctx.accounts.api_vault.to_account_info();
+      let rent_destination = ctx.accounts.api_user_vault.to_account_info();
       
       let vault_bump = ctx.accounts.refund
         .vault_bump

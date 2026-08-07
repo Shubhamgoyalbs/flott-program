@@ -22,7 +22,7 @@ pub struct AuthorityRefill<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -58,7 +58,7 @@ impl<'info> AuthorityRefill<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.system_program.key(),
         Transfer {
-          from: ctx.accounts.vault.to_account_info(),
+          from: ctx.accounts.api_user_vault.to_account_info(),
           to:   ctx.accounts.authority.to_account_info(),
         },
         &[vault_seeds],
@@ -70,7 +70,7 @@ impl<'info> AuthorityRefill<'info> {
       account: ctx.accounts.authority.key()
     });
     
-    if ctx.accounts.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
+    if ctx.accounts.api_user_vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
       ctx.accounts.api_user.is_active = false;
       emit_cpi!(ApiUserAccountActiveState {
         account: ctx.accounts.api_user.key(),

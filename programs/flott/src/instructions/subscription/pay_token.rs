@@ -41,10 +41,10 @@ pub struct PayForSubscriptionToken<'info> {
     ],
     bump = subscriber_pda.vault_bump,
     token::mint = mint,
-    token::authority = subscriber_vault,
+    token::authority = subscriber_token_vault,
     token::token_program = token_program,
   )]
-  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub subscriber_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -56,7 +56,7 @@ pub struct PayForSubscriptionToken<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -76,7 +76,7 @@ pub struct PayForSubscriptionToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub api_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -163,7 +163,7 @@ impl<'info> PayForSubscriptionToken<'info> {
       }
     }
     
-    let vault_token_balance = ctx.accounts.subscriber_vault.amount;
+    let vault_token_balance = ctx.accounts.subscriber_token_vault.amount;
     
     let sub_pda_key = ctx.accounts.subscriber_pda.key();
     let api_user_key = ctx.accounts.api_user.key();
@@ -248,10 +248,10 @@ impl<'info> PayForSubscriptionToken<'info> {
             CpiContext::new_with_signer(
               ctx.accounts.token_program.key(),
               TransferChecked {
-                from: ctx.accounts.subscriber_vault.to_account_info(),
+                from: ctx.accounts.subscriber_token_vault.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
-                to: ctx.accounts.vault_token_account.to_account_info(),
-                authority: ctx.accounts.subscriber_vault.to_account_info(),
+                to: ctx.accounts.api_token_vault.to_account_info(),
+                authority: ctx.accounts.subscriber_token_vault.to_account_info(),
               },
               &[vault_signer_seeds],
             ),
@@ -265,10 +265,10 @@ impl<'info> PayForSubscriptionToken<'info> {
             CpiContext::new_with_signer(
               ctx.accounts.token_program.key(),
               TransferChecked {
-                from: ctx.accounts.subscriber_vault.to_account_info(),
+                from: ctx.accounts.subscriber_token_vault.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.server_token_account.to_account_info(),
-                authority: ctx.accounts.subscriber_vault.to_account_info(),
+                authority: ctx.accounts.subscriber_token_vault.to_account_info(),
               },
               &[vault_signer_seeds],
             ),
@@ -282,10 +282,10 @@ impl<'info> PayForSubscriptionToken<'info> {
             CpiContext::new_with_signer(
               ctx.accounts.token_program.key(),
               TransferChecked {
-                from: ctx.accounts.subscriber_vault.to_account_info(),
+                from: ctx.accounts.subscriber_token_vault.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.recipient_token_account.to_account_info(),
-                authority: ctx.accounts.subscriber_vault.to_account_info(),
+                authority: ctx.accounts.subscriber_token_vault.to_account_info(),
               },
               &[vault_signer_seeds],
             ),
@@ -320,16 +320,16 @@ impl<'info> PayForSubscriptionToken<'info> {
       &[self.subscriber_pda.vault_bump],
     ];
     
-    let remaining_tokens = self.subscriber_vault.amount;
+    let remaining_tokens = self.subscriber_token_vault.amount;
     if remaining_tokens > 0 {
       transfer_checked(
         CpiContext::new_with_signer(
           self.token_program.key(),
           TransferChecked {
-            from: self.subscriber_vault.to_account_info(),
+            from: self.subscriber_token_vault.to_account_info(),
             mint: self.mint.to_account_info(),
             to: self.subscriber_token_account.to_account_info(),
-            authority: self.subscriber_vault.to_account_info(),
+            authority: self.subscriber_token_vault.to_account_info(),
           },
           &[vault_signer_seeds],
         ),
@@ -342,15 +342,15 @@ impl<'info> PayForSubscriptionToken<'info> {
       CpiContext::new_with_signer(
         self.token_program.key(),
         CloseAccount {
-          account: self.subscriber_vault.to_account_info(),
+          account: self.subscriber_token_vault.to_account_info(),
           destination: self.subscriber.to_account_info(),
-          authority: self.subscriber_vault.to_account_info(),
+          authority: self.subscriber_token_vault.to_account_info(),
         },
         &[vault_signer_seeds],
       ),
     )?;
     
-    self.subscriber_pda.close(self.vault.to_account_info())?;
+    self.subscriber_pda.close(self.api_user_vault.to_account_info())?;
     
     Ok(())
   }

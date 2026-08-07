@@ -61,7 +61,7 @@ pub struct PayOrderToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub refund_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub refund_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -93,15 +93,15 @@ pub struct PayOrderToken<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub api_vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
-    constraint = api_vault_token_account.owner == api_vault.key() @ ErrorCode::InvalidTokenAccountOwner,
+    constraint = api_token_vault.owner == api_user_vault.key() @ ErrorCode::InvalidTokenAccountOwner,
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub api_vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub api_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -159,7 +159,7 @@ impl<'info> PayOrderToken<'info> {
     
     let expected_vault = ctx.accounts.refund.vault.ok_or(ErrorCode::RefundVaultMissing)?;
     require!(
-      ctx.accounts.refund_vault.key() == expected_vault,
+      ctx.accounts.refund_token_vault.key() == expected_vault,
       ErrorCode::InvalidVault
     );
     
@@ -195,7 +195,7 @@ impl<'info> PayOrderToken<'info> {
         TransferChecked {
           from: ctx.accounts.payer_token_account.to_account_info(),
           mint: ctx.accounts.mint.to_account_info(),
-          to: ctx.accounts.api_vault_token_account.to_account_info(),
+          to: ctx.accounts.api_token_vault.to_account_info(),
           authority: ctx.accounts.payer.to_account_info(),
         },
       ),
@@ -210,7 +210,7 @@ impl<'info> PayOrderToken<'info> {
           TransferChecked {
             from: ctx.accounts.payer_token_account.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
-            to: ctx.accounts.refund_vault.to_account_info(),
+            to: ctx.accounts.refund_token_vault.to_account_info(),
             authority: ctx.accounts.payer.to_account_info(),
           },
         ),
@@ -282,7 +282,7 @@ impl<'info> PayOrderToken<'info> {
         ErrorCode::IncompleteSplitDistribution
       );
       
-      let rent_destination = ctx.accounts.api_vault.to_account_info();
+      let rent_destination = ctx.accounts.api_user_vault.to_account_info();
       
       let vault_bump = ctx.accounts.refund
         .vault_bump
@@ -301,9 +301,9 @@ impl<'info> PayOrderToken<'info> {
         CpiContext::new_with_signer(
           ctx.accounts.token_program.key(),
           CloseAccount {
-            account: ctx.accounts.refund_vault.to_account_info(),
+            account: ctx.accounts.refund_token_vault.to_account_info(),
             destination: rent_destination.clone(),
-            authority: ctx.accounts.refund_vault.to_account_info(),
+            authority: ctx.accounts.refund_token_vault.to_account_info(),
           },
           &[vault_seeds],
         ),

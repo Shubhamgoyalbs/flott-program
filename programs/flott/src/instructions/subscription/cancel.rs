@@ -33,7 +33,7 @@ pub struct CancelSubscription<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -60,7 +60,7 @@ pub struct CancelSubscription<'info> {
   
   #[account(
       mut,
-      close = vault,
+      close = api_user_vault,
       seeds = [
         "subscriber".as_ref(),
         api_user.key().as_ref(),

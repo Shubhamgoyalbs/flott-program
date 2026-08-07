@@ -9,7 +9,7 @@ use crate::event::*;
 
 #[event_cpi]
 #[derive(Accounts)]
-#[instruction(cuid: String)]
+#[instruction(policy_cuid: String)]
 pub struct UpdateSubscriptionPolicy<'info> {
   pub authority: Signer<'info>,
   
@@ -25,7 +25,7 @@ pub struct UpdateSubscriptionPolicy<'info> {
     ],
     bump = api_user.vault_bump,
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -33,7 +33,7 @@ pub struct UpdateSubscriptionPolicy<'info> {
       "subscription".as_ref(),
       "policy".as_ref(),
       api_user.key().as_ref(),
-      cuid.as_bytes(),
+      policy_cuid.as_bytes(),
     ],
     bump = subscription_policy.bump,
   )]
@@ -69,7 +69,7 @@ impl<'info> UpdateSubscriptionPolicy<'info> {
     ctx.accounts.subscription_policy.is_active = is_active;
     ctx.accounts.subscription_policy.trial_intervals = trial_intervals;
     
-    if ctx.accounts.vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
+    if ctx.accounts.api_user_vault.to_account_info().lamports() < API_USER_MIN_BALANCE {
       ctx.accounts.api_user.is_active = false;
       
       emit_cpi!(ApiUserAccountActiveState {

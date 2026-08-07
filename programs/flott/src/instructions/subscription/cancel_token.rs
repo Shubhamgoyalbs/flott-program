@@ -48,10 +48,10 @@ pub struct CancelToken<'info> {
     ],
     bump = subscriber_pda.vault_bump,
     token::mint = mint,
-    token::authority = subscriber_vault,
+    token::authority = subscriber_token_vault,
     token::token_program = token_program,
   )]
-  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub subscriber_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     seeds = [
@@ -73,11 +73,11 @@ pub struct CancelToken<'info> {
     ],
     bump = api_user.vault_bump,
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_token_vault: SystemAccount<'info>,
   
   #[account(
     mut,
-    close = vault,
+    close = api_token_vault,
     seeds = [
       "subscriber".as_ref(),
       api_user.key().as_ref(),
@@ -122,19 +122,19 @@ impl<'info> CancelToken<'info> {
       &[ctx.accounts.subscriber_pda.vault_bump],
     ];
     
-    if ctx.accounts.subscriber_vault.amount > 0 {
+    if ctx.accounts.subscriber_token_vault.amount > 0 {
       transfer_checked(
         CpiContext::new_with_signer(
           ctx.accounts.token_program.key(),
           TransferChecked {
-            from: ctx.accounts.subscriber_vault.to_account_info(),
+            from: ctx.accounts.subscriber_token_vault.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
             to: ctx.accounts.subscriber_token_account.to_account_info(),
-            authority: ctx.accounts.subscriber_vault.to_account_info(),
+            authority: ctx.accounts.subscriber_token_vault.to_account_info(),
           },
           &[signer_seeds],
         ),
-        ctx.accounts.subscriber_vault.amount,
+        ctx.accounts.subscriber_token_vault.amount,
         ctx.accounts.mint.decimals,
       )?;
     }
@@ -143,9 +143,9 @@ impl<'info> CancelToken<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.token_program.key(),
         CloseAccount {
-          account: ctx.accounts.subscriber_vault.to_account_info(),
+          account: ctx.accounts.subscriber_token_vault.to_account_info(),
           destination: ctx.accounts.subscriber.to_account_info(),
-          authority: ctx.accounts.subscriber_vault.to_account_info(),
+          authority: ctx.accounts.subscriber_token_vault.to_account_info(),
         },
         &[signer_seeds],
       ),

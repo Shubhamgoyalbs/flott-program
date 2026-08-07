@@ -36,9 +36,9 @@ pub struct DepositToSubscriptionVaultToken<'info> {
     ],
     bump = subscriber_pda.vault_bump,
     token::mint = mint,
-    token::authority = subscriber_vault,
+    token::authority = subscriber_token_vault,
   )]
-  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub subscriber_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
       constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
@@ -102,7 +102,7 @@ impl<'info> DepositToSubscriptionVaultToken<'info> {
       ErrorCode::InvalidTokenMint
     );
     
-    let current_balance = ctx.accounts.subscriber_vault.amount;
+    let current_balance = ctx.accounts.subscriber_token_vault.amount;
     let projected_balance = current_balance
       .checked_add(amount)
       .ok_or(ErrorCode::ArithmeticOverflow)?;
@@ -118,7 +118,7 @@ impl<'info> DepositToSubscriptionVaultToken<'info> {
         TransferChecked {
           from: ctx.accounts.subscriber_token_account.to_account_info(),
           mint: ctx.accounts.mint.to_account_info(),
-          to: ctx.accounts.subscriber_vault.to_account_info(),
+          to: ctx.accounts.subscriber_token_vault.to_account_info(),
           authority: ctx.accounts.subscriber.to_account_info(),
         },
       ),

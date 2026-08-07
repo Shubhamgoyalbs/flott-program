@@ -35,7 +35,7 @@ pub struct AuthorizeApiUser<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -69,7 +69,7 @@ impl<'info> AuthorizeApiUser<'info> {
     );
     
     require!(
-      ctx.accounts.vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
+      ctx.accounts.api_user_vault.lamports() > API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE,
       ErrorCode::InsufficientVaultBalance
     );
     
@@ -88,7 +88,7 @@ impl<'info> AuthorizeApiUser<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.system_program.key(),
         Transfer {
-          from: ctx.accounts.vault.to_account_info(),
+          from: ctx.accounts.api_user_vault.to_account_info(),
           to:   ctx.accounts.authority.to_account_info(),
         },
         &[vault_seeds],

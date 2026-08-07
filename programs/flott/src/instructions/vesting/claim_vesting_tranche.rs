@@ -68,7 +68,7 @@ pub struct ClaimVestingTranche<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -79,7 +79,7 @@ pub struct ClaimVestingTranche<'info> {
     ],
     bump = vesting_receiver_pda.vault_bump,
   )]
-  pub vesting_vault: SystemAccount<'info>,
+  pub vesting_receiver_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -127,13 +127,13 @@ impl<'info> ClaimVestingTranche<'info> {
     match tranche {
       None => {
         
-        let vault_lamports = ctx.accounts.vesting_vault.lamports();
+        let vault_lamports = ctx.accounts.vesting_receiver_vault.lamports();
         
         transfer(
           CpiContext::new_with_signer(
             ctx.accounts.system_program.key(),
             Transfer {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_vault.to_account_info(),
               to: ctx.accounts.maker.to_account_info(),
             },
             vault_signer_seeds,
@@ -169,7 +169,7 @@ impl<'info> ClaimVestingTranche<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.system_program.key(),
             Transfer {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_vault.to_account_info(),
               to: ctx.accounts.server.to_account_info(),
             },
             vault_signer_seeds,
@@ -181,8 +181,8 @@ impl<'info> ClaimVestingTranche<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.system_program.key(),
             Transfer {
-              from: ctx.accounts.vesting_vault.to_account_info(),
-              to: ctx.accounts.vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_vault.to_account_info(),
+              to: ctx.accounts.api_user_vault.to_account_info(),
             },
             vault_signer_seeds,
           ),
@@ -193,7 +193,7 @@ impl<'info> ClaimVestingTranche<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.system_program.key(),
             Transfer {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_vault.to_account_info(),
               to: ctx.accounts.vesting_receiver.to_account_info(),
             },
             vault_signer_seeds,

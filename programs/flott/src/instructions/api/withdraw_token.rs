@@ -29,7 +29,7 @@ pub struct WithdrawFromVaultToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub api_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -62,7 +62,7 @@ impl<'info> WithdrawFromVaultToken<'info> {
     require!(amount > 0, ErrorCode::InvalidAmount);
     
     require!(
-      amount <= ctx.accounts.vault_token_account.amount,
+      amount <= ctx.accounts.api_token_vault.amount,
       ErrorCode::InsufficientDeposit
     );
     
@@ -80,10 +80,10 @@ impl<'info> WithdrawFromVaultToken<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.token_program.key(),
         TransferChecked {
-          from: ctx.accounts.vault_token_account.to_account_info(),
+          from: ctx.accounts.api_token_vault.to_account_info(),
           mint: ctx.accounts.mint.to_account_info(),
           to: ctx.accounts.owner_token_account.to_account_info(),
-          authority: ctx.accounts.vault_token_account.to_account_info(),
+          authority: ctx.accounts.api_token_vault.to_account_info(),
         },
         &[vault_seeds],
       ),

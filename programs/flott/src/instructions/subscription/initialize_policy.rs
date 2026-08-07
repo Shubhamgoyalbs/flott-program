@@ -26,7 +26,7 @@ pub struct InitializeSubscriptionPolicy<'info> {
     ],
     bump = api_user.vault_bump,
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     init,

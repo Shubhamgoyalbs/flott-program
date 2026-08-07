@@ -91,10 +91,10 @@ pub struct InitializeOrderToken<'info> {
     ],
     bump,
     token::mint = mint,
-    token::authority = refund_vault,
+    token::authority = refund_token_vault,
     token::token_program = token_program,
   )]
-  pub refund_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub refund_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -187,8 +187,8 @@ impl<'info> InitializeOrderToken<'info> {
     ctx.accounts.refund.order_payment = None;
     
     if params.non_refundable_percentage < 100_000_000 {
-      ctx.accounts.refund.vault = Some(ctx.accounts.refund_vault.key());
-      ctx.accounts.refund.vault_bump = Some(ctx.bumps.refund_vault);
+      ctx.accounts.refund.vault = Some(ctx.accounts.refund_token_vault.key());
+      ctx.accounts.refund.vault_bump = Some(ctx.bumps.refund_token_vault);
     } else {
       ctx.accounts.refund.vault = None;
       ctx.accounts.refund.vault_bump = None;

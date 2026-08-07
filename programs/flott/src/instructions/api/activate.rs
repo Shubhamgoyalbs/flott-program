@@ -21,7 +21,7 @@ pub struct ActivateApiUser<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -42,7 +42,7 @@ impl<'info> ActivateApiUser<'info> {
     ctx.accounts.api_user.verify_authority(&ctx.accounts.authority.key())?;
     
     require!(
-      ctx.accounts.vault.lamports() > API_USER_MIN_BALANCE,
+      ctx.accounts.api_user_vault.lamports() > API_USER_MIN_BALANCE,
       ErrorCode::InsufficientVaultBalance
     );
     

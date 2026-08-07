@@ -25,7 +25,7 @@ pub struct InitializeApiUser<'info> {
     ],
     bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     init,
@@ -50,17 +50,17 @@ impl <'info> InitializeApiUser<'info> {
         ctx.accounts.system_program.key(),
         Transfer {
           from: ctx.accounts.owner.to_account_info(),
-          to: ctx.accounts.vault.to_account_info()
+          to: ctx.accounts.api_user_vault.to_account_info()
         }
       ),
       API_USER_MIN_BALANCE + API_USER_MPC_INITIAL_BALANCE + 5000000 // this extra amount lives vault and can be deductible
     )?;
     
     ctx.accounts.api_user.authority = None;
-    ctx.accounts.api_user.vault = ctx.accounts.vault.key();
+    ctx.accounts.api_user.vault = ctx.accounts.api_user_vault.key();
     ctx.accounts.api_user.owner = ctx.accounts.owner.key();
     ctx.accounts.api_user.bump = ctx.bumps.api_user;
-    ctx.accounts.api_user.vault_bump = ctx.bumps.vault;
+    ctx.accounts.api_user.vault_bump = ctx.bumps.api_user_vault;
     ctx.accounts.api_user.fee_percentage = fee_percentage;
     ctx.accounts.api_user.is_active = false;
     ctx.accounts.api_user.created_at = Clock::get()?.unix_timestamp;

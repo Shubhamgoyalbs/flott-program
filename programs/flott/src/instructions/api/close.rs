@@ -24,7 +24,7 @@ pub struct CloseApiAccount<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -60,12 +60,12 @@ impl<'info> CloseApiAccount<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.system_program.key(),
         Transfer {
-          from: ctx.accounts.vault.to_account_info(),
+          from: ctx.accounts.api_user_vault.to_account_info(),
           to: ctx.accounts.owner.to_account_info(),
         },
         &[vault_seeds]
       ),
-      ctx.accounts.vault.lamports()
+      ctx.accounts.api_user_vault.lamports()
     )?;
     
     transfer(

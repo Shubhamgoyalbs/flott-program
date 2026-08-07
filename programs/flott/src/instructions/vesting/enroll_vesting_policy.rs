@@ -61,7 +61,7 @@ pub struct EnrollInVestingPolicy<'info> {
     ],
     bump,
   )]
-  pub vesting_vault: SystemAccount<'info>,
+  pub vesting_receiver_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -109,8 +109,8 @@ impl<'info> EnrollInVestingPolicy<'info> {
     }
     
     ctx.accounts.vesting_receiver_pda.vesting_policy = ctx.accounts.vesting_policy.key();
-    ctx.accounts.vesting_receiver_pda.vault = ctx.accounts.vesting_vault.key();
-    ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_vault;
+    ctx.accounts.vesting_receiver_pda.vault = ctx.accounts.vesting_receiver_vault.key();
+    ctx.accounts.vesting_receiver_pda.vault_bump = ctx.bumps.vesting_receiver_vault;
     ctx.accounts.vesting_receiver_pda.receiver = ctx.accounts.vesting_receiver.key();
     ctx.accounts.vesting_receiver_pda.is_cancelable = is_cancelable;
     ctx.accounts.vesting_receiver_pda.cuid = cuid;
@@ -126,7 +126,7 @@ impl<'info> EnrollInVestingPolicy<'info> {
         ctx.accounts.system_program.key(),
         Transfer {
          from: ctx.accounts.maker.to_account_info(),
-         to: ctx.accounts.vesting_vault.to_account_info(),
+         to: ctx.accounts.vesting_receiver_vault.to_account_info(),
         }
       ),
       ctx.accounts.vesting_policy.total_amount

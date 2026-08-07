@@ -22,7 +22,7 @@ pub struct RefundPayoutToken<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "order".as_ref(),
       maker.key().as_ref(),
@@ -36,7 +36,7 @@ pub struct RefundPayoutToken<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "expiry".as_ref(),
       order.key().as_ref(),
@@ -47,7 +47,7 @@ pub struct RefundPayoutToken<'info> {
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "split".as_ref(),
       order.key().as_ref(),
@@ -66,11 +66,11 @@ pub struct RefundPayoutToken<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
-    close = vault,
+    close = api_user_vault,
     seeds = [
       "refund".as_ref(),
       order.key().as_ref(),
@@ -111,7 +111,7 @@ pub struct RefundPayoutToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub refund_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub refund_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -165,7 +165,7 @@ impl<'info> RefundPayoutToken<'info> {
       &[vault_bump],
     ];
     
-    let vault_balance = ctx.accounts.refund_vault.amount;
+    let vault_balance = ctx.accounts.refund_token_vault.amount;
     let amount = ctx.accounts.order.total_amount;
     let decimals = ctx.accounts.mint.decimals;
     let mint_key = ctx.accounts.mint.key();
@@ -206,10 +206,10 @@ impl<'info> RefundPayoutToken<'info> {
         CpiContext::new_with_signer(
           ctx.accounts.token_program.key(),
           TransferChecked {
-            from: ctx.accounts.refund_vault.to_account_info(),
+            from: ctx.accounts.refund_token_vault.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
             to: account_info.to_account_info(),
-            authority: ctx.accounts.refund_vault.to_account_info(),
+            authority: ctx.accounts.refund_token_vault.to_account_info(),
           },
           &[vault_seeds],
         ),
@@ -239,9 +239,9 @@ impl<'info> RefundPayoutToken<'info> {
       CpiContext::new_with_signer(
         ctx.accounts.token_program.key(),
         CloseAccount {
-          account: ctx.accounts.refund_vault.to_account_info(),
+          account: ctx.accounts.refund_token_vault.to_account_info(),
           destination: ctx.accounts.maker_token_account.to_account_info(),
-          authority: ctx.accounts.refund_vault.to_account_info(),
+          authority: ctx.accounts.refund_token_vault.to_account_info(),
         },
         &[vault_seeds],
       ),

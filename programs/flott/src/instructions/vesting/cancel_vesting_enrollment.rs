@@ -65,7 +65,7 @@ pub struct CancelVestingEnrollment<'info> {
     ],
     bump = vesting_receiver_pda.vault_bump,
   )]
-  pub vesting_vault: SystemAccount<'info>,
+  pub vesting_receiver_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -119,7 +119,7 @@ impl<'info> CancelVestingEnrollment<'info> {
       }
     }
     
-    let vault_lamports = ctx.accounts.vesting_vault.lamports();
+    let vault_lamports = ctx.accounts.vesting_receiver_vault.lamports();
     
     if vault_lamports > 0 {
       let receiver_pda_key = ctx.accounts.vesting_receiver_pda.key();
@@ -136,7 +136,7 @@ impl<'info> CancelVestingEnrollment<'info> {
         CpiContext::new_with_signer(
           ctx.accounts.system_program.key(),
           Transfer {
-            from: ctx.accounts.vesting_vault.to_account_info(),
+            from: ctx.accounts.vesting_receiver_vault.to_account_info(),
             to: ctx.accounts.maker.to_account_info(),
           },
           signer_seeds,

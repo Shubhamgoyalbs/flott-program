@@ -48,7 +48,7 @@ pub struct ActivateSubscriptionToken<'info> {
     token::mint = mint,
     token::authority = subscriber_pda,
   )]
-  pub subscriber_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub subscriber_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     constraint = mint.key() == subscription_policy.mint @ ErrorCode::InvalidTokenMint,
@@ -124,7 +124,7 @@ impl<'info> ActivateSubscriptionToken<'info> {
         TransferChecked {
           from: ctx.accounts.subscriber_token_account.to_account_info(),
           mint: ctx.accounts.mint.to_account_info(),
-          to: ctx.accounts.subscriber_vault.to_account_info(),
+          to: ctx.accounts.subscriber_token_vault.to_account_info(),
           authority: ctx.accounts.subscriber.to_account_info(),
         },
       ),
@@ -155,7 +155,7 @@ impl<'info> ActivateSubscriptionToken<'info> {
         CpiContext::new_with_signer(
           ctx.accounts.token_program.key(),
           TransferChecked {
-            from: ctx.accounts.subscriber_vault.to_account_info(),
+            from: ctx.accounts.subscriber_token_vault.to_account_info(),
             mint: ctx.accounts.mint.to_account_info(),
             to: ctx.accounts.recipient_token_account.to_account_info(),
             authority: ctx.accounts.subscriber_pda.to_account_info(),

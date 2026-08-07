@@ -36,7 +36,7 @@ pub struct ExtendExpiry<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -103,7 +103,7 @@ impl<'info> ExtendExpiry<'info> {
         ctx.accounts.system_program.key(),
         Transfer {
           from: ctx.accounts.extend_authority.to_account_info(),
-          to: ctx.accounts.vault.to_account_info(),
+          to: ctx.accounts.api_user_vault.to_account_info(),
         },
       ),
       extend_fee,

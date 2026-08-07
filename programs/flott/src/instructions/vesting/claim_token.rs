@@ -87,7 +87,7 @@ pub struct ClaimToken<'info> {
     ],
     bump = api_user.vault_bump
   )]
-  pub vault: SystemAccount<'info>,
+  pub api_user_vault: SystemAccount<'info>,
   
   #[account(
     mut,
@@ -100,7 +100,7 @@ pub struct ClaimToken<'info> {
     token::mint = mint,
     token::token_program = token_program,
   )]
-  pub vault_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub api_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -135,10 +135,10 @@ pub struct ClaimToken<'info> {
     ],
     bump,
     token::mint = mint,
-    token::authority = vesting_vault,
+    token::authority = vesting_receiver_token_vault,
     token::token_program = token_program,
   )]
-  pub vesting_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+  pub vesting_receiver_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
   
   #[account(
     mut,
@@ -203,7 +203,7 @@ impl<'info> ClaimToken<'info> {
     
     match tranche {
       None => {
-        let vault_amount = ctx.accounts.vesting_vault.amount;
+        let vault_amount = ctx.accounts.vesting_receiver_token_vault.amount;
         let pda_lamports = ctx.accounts.vesting_receiver_pda.get_lamports();
         
         if vault_amount > 0 {
@@ -211,10 +211,10 @@ impl<'info> ClaimToken<'info> {
             CpiContext::new_with_signer(
               ctx.accounts.token_program.key(),
               TransferChecked {
-                from: ctx.accounts.vesting_vault.to_account_info(),
+                from: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.maker_ata.to_account_info(),
-                authority: ctx.accounts.vesting_vault.to_account_info(),
+                authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
               },
               vault_signer_seeds
             ),
@@ -227,9 +227,9 @@ impl<'info> ClaimToken<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.token_program.key(),
             CloseAccount {
-              account: ctx.accounts.vesting_vault.to_account_info(),
+              account: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
               destination: ctx.accounts.maker.to_account_info(),
-              authority: ctx.accounts.vesting_vault.to_account_info(),
+              authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
             },
             vault_signer_seeds
           ),
@@ -272,10 +272,10 @@ impl<'info> ClaimToken<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.token_program.key(),
             TransferChecked {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
               mint: ctx.accounts.mint.to_account_info(),
               to: ctx.accounts.server_token_account.to_account_info(),
-              authority: ctx.accounts.vesting_vault.to_account_info(),
+              authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
             },
             vault_signer_seeds
           ),
@@ -287,10 +287,10 @@ impl<'info> ClaimToken<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.token_program.key(),
             TransferChecked {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
               mint: ctx.accounts.mint.to_account_info(),
               to: ctx.accounts.receiver_ata.to_account_info(),
-              authority: ctx.accounts.vesting_vault.to_account_info(),
+              authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
             },
             vault_signer_seeds
           ),
@@ -302,10 +302,10 @@ impl<'info> ClaimToken<'info> {
           CpiContext::new_with_signer(
             ctx.accounts.token_program.key(),
             TransferChecked {
-              from: ctx.accounts.vesting_vault.to_account_info(),
+              from: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
               mint: ctx.accounts.mint.to_account_info(),
-              to: ctx.accounts.vault_token_account.to_account_info(),
-              authority: ctx.accounts.vesting_vault.to_account_info(),
+              to: ctx.accounts.api_token_vault.to_account_info(),
+              authority: ctx.accounts.vesting_receiver_token_vault.to_account_info(),
             },
             vault_signer_seeds
           ),
